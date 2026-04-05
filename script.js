@@ -776,38 +776,3 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 
 })(); // end DP module IIFE
 
-/* ============================================
-   MOBILE NAVIGATION
-   ============================================ */
-const menuToggle = document.getElementById('menu-toggle');
-const menuClose  = document.getElementById('menu-close');
-const mobileNav  = document.getElementById('mobile-nav');
-
-if (menuToggle && mobileNav) {
-    menuToggle.addEventListener('click', () => {
-        mobileNav.classList.add('active');
-        document.body.style.overflow = 'hidden';
-    });
-}
-
-if (menuClose && mobileNav) {
-    menuClose.addEventListener('click', () => {
-        mobileNav.classList.remove('active');
-        document.body.style.overflow = '';
-    });
-}
-
-window.closeMenu = function() {
-    if (mobileNav) {
-        mobileNav.classList.remove('active');
-        document.body.style.overflow = '';
-    }
-};
-
-window.openAndCloseModal = function() {
-    closeMenu();
-    setTimeout(() => {
-        if (typeof openDPModal === 'function') openDPModal();
-    }, 300);
-};
-
