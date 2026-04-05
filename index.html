@@ -422,11 +422,17 @@
 
                 <!-- Action Buttons -->
                 <div class="dp-result-actions">
-                    <button class="dp-new-btn" onclick="resetDP()">
-                        <i class="fa-solid fa-rotate"></i> Create New
+                    <button class="dp-new-btn" onclick="resetDP()" title="Create a new DP">
+                        <i class="fa-solid fa-rotate"></i> <span>Reset</span>
                     </button>
                     <button class="dp-download-btn" id="dp-download-btn" onclick="downloadDP()">
                         <i class="fa-solid fa-download"></i> Download
+                    </button>
+                    <button class="dp-social-btn whatsapp" onclick="shareWhatsApp()" title="Share on WhatsApp">
+                        <i class="fa-brands fa-whatsapp"></i>
+                    </button>
+                    <button class="dp-social-btn linkedin" onclick="shareLinkedIn()" title="Share on LinkedIn">
+                        <i class="fa-brands fa-linkedin-in"></i>
                     </button>
                 </div>
 

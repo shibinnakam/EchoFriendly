@@ -636,6 +636,71 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         a.download = `EchoFriendly_DP_${name.replace(/\s+/g,'_') || 'poster'}.png`;
         a.href = finalDataURL;
         a.click();
+
+        // Optional: Trigger a small "Success" toast here if needed
+    };
+
+    /** Convert dataURL to File object for Sharing */
+    function dataURLtoFile(dataurl, filename) {
+        let arr = dataurl.split(','),
+            mime = arr[0].match(/:(.*?);/)[1],
+            bstr = atob(arr[1]),
+            n = bstr.length,
+            u8arr = new Uint8Array(n);
+        while (n--) {
+            u8arr[n] = bstr.charCodeAt(n);
+        }
+        return new File([u8arr], filename, { type: mime });
+    }
+
+    /** Native Share via Web Share API */
+    async function nativeShare(text, fileName) {
+        if (!finalDataURL) return false;
+        
+        try {
+            const file = dataURLtoFile(finalDataURL, fileName);
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                await navigator.share({
+                    files: [file],
+                    title: 'My EchoFriendly DP',
+                    text: text,
+                });
+                return true;
+            }
+        } catch (err) {
+            console.warn('Native share failed or cancelled:', err);
+        }
+        return false;
+    }
+
+    /** WhatsApp Sharing */
+    window.shareWhatsApp = async function () {
+        const text = document.getElementById('dp-caption-box')?.innerText || '';
+        const name = document.getElementById('dp-name')?.value?.trim() || 'poster';
+        const fileName = `EchoFriendly_DP_${name.replace(/\s+/g, '_')}.png`;
+
+        const shared = await nativeShare(text, fileName);
+        if (!shared) {
+            const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+            window.open(url, '_blank');
+        }
+    };
+
+    /** LinkedIn Sharing */
+    window.shareLinkedIn = async function () {
+        const text = document.getElementById('dp-caption-box')?.innerText || '';
+        const name = document.getElementById('dp-name')?.value?.trim() || 'poster';
+        const fileName = `EchoFriendly_DP_${name.replace(/\s+/g, '_')}.png`;
+        const siteUrl = window.location.href;
+
+        const shared = await nativeShare(text, fileName);
+        if (!shared) {
+            // LinkedIn fallback is URL based
+            const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(siteUrl)}`;
+            window.open(url, '_blank');
+            // Inform user to paste caption manually if they are on Desktop
+            alert("LinkedIn Desktop doesn't support direct image upload via link. Please download the image and paste the caption manually.");
+        }
     };
 
     // ── Reset ────────────────────────────────────────────────────

@@ -1890,6 +1890,42 @@ body.page-loaded .hero-scroll-cue {
     box-shadow: 0 12px 30px rgba(45,79,64,0.4);
 }
 
+.dp-social-btn {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--white);
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: var(--transition);
+    box-shadow: var(--shadow-sm);
+    flex-shrink: 0;
+}
+
+.dp-social-btn.whatsapp { 
+    background: #25D366; 
+    box-shadow: 0 4px 12px rgba(37, 211, 102, 0.25);
+}
+.dp-social-btn.whatsapp:hover { 
+    background: #128C7E; 
+    transform: translateY(-3px); 
+    box-shadow: 0 8px 18px rgba(37, 211, 102, 0.35); 
+}
+
+.dp-social-btn.linkedin { 
+    background: #0077B5; 
+    box-shadow: 0 4px 12px rgba(0, 119, 181, 0.25);
+}
+.dp-social-btn.linkedin:hover { 
+    background: #004182; 
+    transform: translateY(-3px); 
+    box-shadow: 0 8px 18px rgba(0, 119, 181, 0.35); 
+}
+
 /* Share Section */
 .dp-share-section {
     width: 100%;
@@ -1974,6 +2010,22 @@ body.page-loaded .hero-scroll-cue {
 
     .dp-modal-header {
         padding: 1.25rem 1.5rem;
+    }
+
+    .dp-result-actions {
+        flex-wrap: wrap;
+        max-width: 100%;
+    }
+    
+    .dp-new-btn, .dp-download-btn {
+        font-size: 0.82rem;
+        padding: 0.75rem;
+    }
+    
+    .dp-social-btn {
+        width: 44px;
+        height: 44px;
+        font-size: 1.1rem;
     }
 }
 
