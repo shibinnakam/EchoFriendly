@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="auth-loading">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -23,6 +23,32 @@
             --sidebar-w: 280px;
             --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
+
+        /* Initial Hide to prevent flashing */
+        html.auth-loading body { visibility: hidden; }
+        
+        .auth-preloader {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #f1f5f3;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+        }
+        .auth-preloader .spinner {
+            width: 40px; height: 40px;
+            border: 3px solid rgba(62, 104, 74, 0.1);
+            border-top: 3px solid #3e684a;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .auth-preloader p { font-size: 0.8rem; letter-spacing: 2px; color: #3e684a; font-weight: 600; text-transform: uppercase; }
+        html:not(.auth-loading) .auth-preloader { opacity: 0; pointer-events: none; }
 
         * { margin:0; padding:0; box-sizing:border-box; }
 
@@ -145,6 +171,10 @@
     </style>
 </head>
 <body>
+    <div class="auth-preloader" id="auth-preloader">
+        <div class="spinner"></div>
+        <p>Verifying Credentials...</p>
+    </div>
 
     <aside class="sidebar">
         <a href="index.html" class="logo"><i class="fa-solid fa-leaf"></i> Echo<em>Friendly</em></a>

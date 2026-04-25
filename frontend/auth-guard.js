@@ -6,7 +6,7 @@
 (function () {
     'use strict';
 
-    // 1. Immediately hide the entire page
+    // 1. Immediately hide the entire page to prevent flashing
     const hideStyle = document.createElement('style');
     hideStyle.id = 'auth-guard-lock';
     hideStyle.innerHTML = 'html { display: none !important; }';
@@ -18,6 +18,10 @@
     function revealPage() {
         const lock = document.getElementById('auth-guard-lock');
         if (lock) lock.remove();
+        
+        // Remove the loading class to reveal body and hide preloader
+        document.documentElement.classList.remove('auth-loading');
+        document.documentElement.classList.remove('protected-page');
     }
 
     /**
@@ -25,7 +29,8 @@
      */
     function redirectToLogin() {
         console.warn('Unauthorized access detected. Redirecting to landing page...');
-        window.location.href = 'index.html';
+        // We use window.location.origin to ensure it works on any domain (Netlify, localhost, etc.)
+        window.location.href = window.location.origin + '/index.html';
     }
 
     /**
@@ -34,16 +39,20 @@
     function runGuard() {
         // Ensure Cognito and Config are available
         if (typeof AmazonCognitoIdentity === 'undefined' || !window.AUTH_CONFIG) {
-            console.error('Auth Guard: Dependencies missing.');
-            revealPage(); // Reveal so user can at least see something or error
+            console.error('Auth Guard: Dependencies missing. Retrying...');
+            // If they aren't loaded yet, wait a bit
+            setTimeout(runGuard, 100);
             return;
         }
 
         const userPool = new AmazonCognitoIdentity.CognitoUserPool(window.AUTH_CONFIG.poolData);
         const user = userPool.getCurrentUser();
-        const isAdminPage = window.location.pathname.includes('admin.html');
-        const isUserPage = window.location.pathname.includes('user.html');
-        const isLandingPage = window.location.pathname === '/' || window.location.pathname.endsWith('index.html') || window.location.pathname === '';
+        
+        // Better path detection for various hosting (Netlify, etc.)
+        const url = window.location.href.toLowerCase();
+        const isAdminPage = url.includes('admin');
+        const isUserPage = url.includes('user');
+        const isLandingPage = url.endsWith('/') || url.includes('index.html') || url.split('/').pop() === '';
 
         if (!user) {
             // No user session at all
@@ -80,9 +89,9 @@
             if (isLandingPage) {
                 const email = session.getIdToken().payload.email;
                 if (email === window.AUTH_CONFIG.adminEmail) {
-                    window.location.href = 'admin.html';
+                    window.location.href = window.location.origin + '/admin.html';
                 } else {
-                    window.location.href = 'user.html';
+                    window.location.href = window.location.origin + '/user.html';
                 }
                 return;
             }
@@ -107,15 +116,20 @@
         });
     }
 
-    // Wait for DOM to be parsed enough to have head, but don't wait for onload
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', runGuard);
-    } else {
+    // Execute immediately if head is ready, otherwise wait for DOM
+    if (document.head) {
         runGuard();
+    } else {
+        const observer = new MutationObserver((mutations, obs) => {
+            if (document.head) {
+                runGuard();
+                obs.disconnect();
+            }
+        });
+        observer.observe(document.documentElement, { childList: true });
     }
 
-    // Safety timeout: If guard takes too long (e.g. network error with Cognito), reveal anyway
-    // but this shouldn't happen as Cognito SDK usually works with local data first.
+    // Safety timeout: If guard takes too long, reveal anyway to prevent black screen forever
     setTimeout(revealPage, 5000);
 
 })();
