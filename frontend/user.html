@@ -249,7 +249,9 @@
         if (typeof AmazonCognitoIdentity !== 'undefined') {
             const userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
             const user = userPool.getCurrentUser();
+            console.log('User Page Auth Check:', user ? 'User found' : 'No user');
             if (!user) {
+                console.log('Redirecting to index.html due to no user session');
                 window.location.href = 'index.html';
             }
         }

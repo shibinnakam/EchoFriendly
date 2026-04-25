@@ -795,10 +795,14 @@ const API_URL = 'https://dw2z2yix5k.execute-api.us-east-1.amazonaws.com/';
 if (typeof AmazonCognitoIdentity !== 'undefined') {
     const userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
     const user = userPool.getCurrentUser();
-    if (user && !window.location.href.includes('admin.html') && !window.location.href.includes('user.html')) {
+    const isDashboard = window.location.pathname.includes('admin') || window.location.pathname.includes('user');
+    
+    if (user && !isDashboard) {
+        console.log('User found on home page, checking session for auto-redirect...');
         user.getSession((err, session) => {
             if (!err && session.isValid()) {
                 const email = user.getUsername();
+                console.log('Session valid for:', email);
                 if (email === 'shibin@gmail.com') {
                     window.location.href = 'admin.html';
                 } else {
