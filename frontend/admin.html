@@ -9,7 +9,38 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js@6.3.6/dist/amazon-cognito-identity.min.js"></script>
     <script src="auth-config.js"></script>
-    <script src="auth-guard.js"></script>
+    <script>
+        (function() {
+            // 1. Instant Hide
+            const style = document.createElement('style');
+            style.innerHTML = 'html { display: none !important; }';
+            document.head.appendChild(style);
+
+            function runGuard() {
+                if (typeof AmazonCognitoIdentity === 'undefined' || !window.AUTH_CONFIG) {
+                    setTimeout(runGuard, 50); return;
+                }
+                const pool = new AmazonCognitoIdentity.CognitoUserPool(window.AUTH_CONFIG.poolData);
+                const user = pool.getCurrentUser();
+                if (!user) {
+                    if (localStorage.getItem('isAdmin') === 'true') { document.documentElement.classList.remove('auth-loading'); style.remove(); return; }
+                    window.location.href = 'index.html'; return;
+                }
+                user.getSession((err, session) => {
+                    if (err || !session.isValid()) { window.location.href = 'index.html'; return; }
+                    const email = session.getIdToken().payload.email;
+                    if (email === window.AUTH_CONFIG.adminEmail || localStorage.getItem('isAdmin') === 'true') {
+                        document.documentElement.classList.remove('auth-loading');
+                        style.remove();
+                    } else {
+                        window.location.href = 'index.html';
+                    }
+                });
+            }
+            runGuard();
+            setTimeout(() => { style.remove(); document.documentElement.classList.remove('auth-loading'); }, 5000);
+        })();
+    </script>
 
     <style>
         :root {
