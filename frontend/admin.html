@@ -178,7 +178,7 @@
             <div class="nav-item" onclick="switchTab('cats')" id="tab-link-cats"><i class="fa-solid fa-layer-group"></i> Categories</div>
             <div class="nav-item" onclick="switchTab('prods')" id="tab-link-prods"><i class="fa-solid fa-basket-shopping"></i> Products</div>
         </nav>
-        <div class="side-bottom"><div class="nav-item" style="color: #ef4444;" onclick="window.location.href='index.html'"><i class="fa-solid fa-right-from-bracket"></i> Logout</div></div>
+        <div class="side-bottom"><div class="nav-item" style="color: #ef4444;" onclick="handleLogout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</div></div>
     </aside>
 
     <main class="main-content">
@@ -308,20 +308,22 @@
         const API_URL = 'https://dw2z2yix5k.execute-api.us-east-1.amazonaws.com/';
         const poolData = { UserPoolId: 'us-east-1_SZ2YkwiZW', ClientId: '4sdi4gt03g0ais2mbsavfdp530' };
         
-        // --- AUTH CHECK ---
-        if (typeof AmazonCognitoIdentity !== 'undefined') {
-            const userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
-            const user = userPool.getCurrentUser();
-            console.log('Admin Page Auth Check:', user ? 'User found' : 'No user');
-            if (!user) {
-                console.log('Redirecting to index.html due to no user session');
-                window.location.href = 'index.html';
-            }
-        }
-        // ------------------
-
         const userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
         let allProducts = [], allCats = [];
+
+        // --- AUTH CHECK ---
+        function checkAuth() {
+            if (typeof AmazonCognitoIdentity !== 'undefined') {
+                const user = userPool.getCurrentUser();
+                console.log('Admin Page Auth Check:', user ? 'User found' : 'No user');
+                if (!user) {
+                    window.location.href = 'index.html';
+                    return false;
+                }
+                return true;
+            }
+            return false;
+        }
 
         async function getAuthHeaders() {
             return new Promise((resolve) => {
@@ -702,7 +704,18 @@
             } 
         }
 
-        window.onload = loadStats;
+        function handleLogout() {
+            const user = userPool.getCurrentUser();
+            if (user) user.signOut();
+            window.location.href = 'index.html';
+        }
+
+        window.onload = () => {
+            if (checkAuth()) {
+                loadStats();
+                loadCategories();
+            }
+        };
     </script>
 </body>
 </html>
