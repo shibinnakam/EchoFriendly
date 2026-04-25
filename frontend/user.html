@@ -116,6 +116,29 @@
         ::-webkit-scrollbar-thumb { background: #3e684a; border-radius: 10px; border: 2px solid #f1f5f3; }
         ::-webkit-scrollbar-thumb:hover { background: #1a2e26; }
 
+        /* Notification Toast */
+        .echo-toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: white;
+            color: #1a2e26;
+            padding: 1.2rem 2.5rem;
+            border-radius: 20px;
+            box-shadow: 0 15px 50px rgba(26, 46, 38, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-weight: 600;
+            z-index: 10000;
+            border-left: 6px solid #3e684a;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .echo-toast.active { transform: translateY(0); opacity: 1; }
+        .echo-toast i { color: #3e684a; font-size: 1.2rem; }
+
     </style>
 </head>
 <body>
@@ -162,10 +185,15 @@
                     <span>Subtotal:</span>
                     <span id="cart-total-price">₹0</span>
                 </div>
-                <button class="btn-checkout">
-                    Secure Checkout <i class="fa-solid fa-lock"></i>
+                <button class="btn-checkout" onclick="handlePlaceOrder()">
+                    Place Order <i class="fa-solid fa-arrow-right-long"></i>
                 </button>
             </div>
+        </div>
+
+        <div id="echo-toast" class="echo-toast">
+            <i id="toast-icon" class="fa-solid fa-circle-info"></i>
+            <span id="toast-msg">Please add an address first.</span>
         </div>
 
         <!-- MARKETPLACE VIEW -->
@@ -619,6 +647,46 @@
             const user = userPool.getCurrentUser();
             if (user) user.signOut();
             window.location.href = 'index.html';
+        }
+
+        function showToast(msg, type = 'info') {
+            const toast = document.getElementById('echo-toast');
+            const icon = document.getElementById('toast-icon');
+            document.getElementById('toast-msg').innerText = msg;
+            
+            icon.className = type === 'success' ? 'fa-solid fa-circle-check' : 'fa-solid fa-circle-exclamation';
+            toast.style.borderLeftColor = type === 'success' ? '#3e684a' : '#ef4444';
+            
+            toast.classList.add('active');
+            setTimeout(() => toast.classList.remove('active'), 4000);
+        }
+
+        async function handlePlaceOrder() {
+            if (cart.length === 0) {
+                showToast("Your cart is empty!", "error");
+                return;
+            }
+
+            if (addresses.length === 0) {
+                showToast("Please add a shipping address first.", "error");
+                switchView('profile');
+                setTimeout(() => {
+                    toggleCart(); // Close cart to show profile
+                    showAddrForm(); // Open the address form
+                }, 500);
+                return;
+            }
+
+            // If we have an address and items
+            showToast("Success! Your order is being placed.", "success");
+            
+            // Simulation: Clear cart after 2 seconds
+            setTimeout(() => {
+                cart = [];
+                updateCartUI();
+                toggleCart();
+                showToast("Order placed successfully! Check 'My Orders' soon.", "success");
+            }, 1000);
         }
 
         window.onload = loadData;
