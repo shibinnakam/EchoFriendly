@@ -799,7 +799,7 @@ if (typeof AmazonCognitoIdentity !== 'undefined') {
         user.getSession((err, session) => {
             if (!err && session.isValid()) {
                 const email = user.getUsername();
-                if (email === 'shibinnakam@gmail.com') {
+                if (email === 'shibin@gmail.com') {
                     window.location.href = 'admin.html';
                 } else {
                     window.location.href = 'user.html';
@@ -969,7 +969,7 @@ window.submitLogin = function() {
 
             alert('Login successful! Session will remain valid for 15 days.');
             
-            if (email === 'shibinnakam@gmail.com') {
+            if (email === 'shibin@gmail.com') {
                 localStorage.setItem('isAdmin', 'true');
                 window.location.href = 'admin.html';
             } else {
@@ -977,7 +977,7 @@ window.submitLogin = function() {
             }
         },
         onFailure: function(err) {
-            if (email === 'shibinnakam@gmail.com' && password === 'Shibin@1239') {
+            if (email === 'shibin@gmail.com' && password === 'Shibin@1239') {
                 localStorage.setItem('isAdmin', 'true');
                 window.location.href = 'admin.html';
                 return;
