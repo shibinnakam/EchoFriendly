@@ -436,6 +436,7 @@
             document.getElementById('user-default-check').checked = false;
         }
 
+        async function saveAddress() {
             const addr = {
                 id: currentEditId || Date.now().toString(),
                 mobile: document.getElementById('user-mobile').value,
