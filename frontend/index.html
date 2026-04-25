@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EchoFriendly | Global Sustainable Infrastructure</title>
+    <meta name="description" content="EchoFriendly — Multinational leaders in sustainable industrial infrastructure. Driving ecological excellence across 15 global regions.">
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <!-- PAGE PRELOADER -->
+    <div class="preloader" id="preloader">
+        <div class="preloader-inner">
+            <div class="preloader-logo">
+                <span class="preloader-icon"><i class="fa-solid fa-leaf"></i></span>
+                <span class="preloader-brand">Echo<em>Friendly</em></span>
+            </div>
+            <div class="preloader-bar">
+                <div class="preloader-fill" id="preloader-fill"></div>
+            </div>
+            <p class="preloader-text" id="preloader-text">Initialising global systems...</p>
+        </div>
+    </div>
+
+    <!-- HEADER -->
+    <header class="header" id="header">
+        <nav class="nav-container">
+            <div class="logo">
+                <span class="logo-icon"><i class="fa-solid fa-leaf"></i></span>
+                Echo<em>Friendly</em>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#impact">Our Impact</a></li>
+                <li><a href="#solutions">Solutions</a></li>
+                <li><a href="#pillars">About</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+            <div class="nav-right">
+                <div class="region-selector">
+                    <i class="fa-solid fa-globe"></i>
+                    <span>EN — Global</span>
+                </div>
+                <button class="btn btn-ghost" id="open-auth-modal" onclick="openAuthModal()" style="padding: 0.7rem 1.2rem;">
+                    <i class="fa-regular fa-user"></i> Login
+                </button>
+                <button class="btn btn-cta" id="open-dp-modal" onclick="openDPModal()">
+                    <i class="fa-solid fa-id-badge"></i> Create DP
+                </button>
+                <a href="#contact" class="btn btn-cta" style="padding: 0.7rem 1.2rem;">Get in Touch</a>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+
+        <!-- HERO -->
+        <section id="home" class="hero">
+            <div class="hero-overlay-bg"></div>
+            <!-- Floating Particles -->
+            <div class="hero-particles" id="hero-particles"></div>
+            <div class="hero-inner">
+                <div class="hero-left">
+                    <div class="hero-badge hero-anim" style="--delay:0.2s">
+                        <span class="badge-dot"></span>
+                        Leading Sustainable Infrastructure Since 2011
+                    </div>
+                    <h1 class="hero-anim" style="--delay:0.5s">Global Scale.<br><em>Local Heart.</em></h1>
+                    <p class="hero-anim" style="--delay:0.8s">Empowering multinational industries to achieve ecological excellence through cutting-edge, data-driven organic solutions.</p>
+                    <div class="hero-actions hero-anim" style="--delay:1.1s">
+                        <a href="#solutions" class="btn btn-primary">Explore Solutions <i class="fa-solid fa-arrow-right"></i></a>
+                        <a href="#impact" class="btn btn-ghost">Our Impact</a>
+                    </div>
+                </div>
+                <div class="hero-right">
+                    <div class="hero-stat-card hero-anim" style="--delay:1.3s">
+                        <div class="hstat"><span class="hstat-num">250M</span><span class="hstat-label">CO₂ Reduced</span></div>
+                        <div class="hstat"><span class="hstat-num">15+</span><span class="hstat-label">Global Regions</span></div>
+                        <div class="hstat"><span class="hstat-num">2,100+</span><span class="hstat-label">Projects Done</span></div>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-scroll-cue">
+                <span>Scroll to explore</span>
+                <i class="fa-solid fa-chevron-down"></i>
+            </div>
+        </section>
+
+        <!-- PARTNER TRUST BAR -->
+        <section class="partners-bar">
+            <p class="partners-label">Trusted by Global Industry Leaders</p>
+            <div class="partners-logos">
+                <div class="partner-logo">GLOBAL TECH</div>
+                <div class="partner-logo">ECO ENERGY</div>
+                <div class="partner-logo">GREEN SEED</div>
+                <div class="partner-logo">NATURE INC</div>
+                <div class="partner-logo">EARTH FLOW</div>
+                <div class="partner-logo">BIO CORE</div>
+            </div>
+        </section>
+
+        <!-- IMPACT STATS -->
+        <section id="impact" class="impact-stats">
+            <div class="impact-inner">
+                <div class="impact-text">
+                    <p class="section-eyebrow">Our Global Footprint</p>
+                    <h2>Numbers That Define Our Commitment</h2>
+                    <p class="impact-desc">Over a decade of measurable environmental progress, delivered at scale across 15 global regions and 45+ certified compliance frameworks.</p>
+                    <a href="#contact" class="btn btn-light-outline">Partner With Us <i class="fa-solid fa-arrow-right"></i></a>
+                </div>
+                <div class="stats-container">
+                    <div class="stat-item">
+                        <h2 class="stat-number" data-target="250" data-suffix="M+">0</h2>
+                        <div class="stat-divider"></div>
+                        <p>Metric Tons CO₂ Reduced</p>
+                    </div>
+                    <div class="stat-item">
+                        <h2 class="stat-number" data-target="15" data-suffix="+">0</h2>
+                        <div class="stat-divider"></div>
+                        <p>Global Operational Regions</p>
+                    </div>
+                    <div class="stat-item">
+                        <h2 class="stat-number" data-target="2100" data-suffix="+">0</h2>
+                        <div class="stat-divider"></div>
+                        <p>Scale Projects Delivered</p>
+                    </div>
+                    <div class="stat-item">
+                        <h2 class="stat-number" data-target="45" data-suffix="+">0</h2>
+                        <div class="stat-divider"></div>
+                        <p>Sustainability Certifications</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- STRATEGIC PILLARS -->
+        <section id="pillars" class="corporate-pillars">
+            <div class="section-header">
+                <p class="section-eyebrow">Our Framework</p>
+                <h2>Three Pillars of<br>Global Change</h2>
+                <p>Built upon decades of strategic research, our operational values guide every partnership, every project, and every promise we make to the planet.</p>
+            </div>
+            <div class="pillars-grid">
+                <div class="pillar-card">
+                    <div class="pillar-num">01</div>
+                    <div class="pillar-icon"><i class="fa-solid fa-microchip"></i></div>
+                    <h3>Scalable Innovation</h3>
+                    <p>Leveraging high-capacity bio-technologies to deliver sustainable solutions that grow with your industrial demands — from pilot to planet-scale.</p>
+                    <div class="pillar-arrow"><i class="fa-solid fa-arrow-up-right"></i></div>
+                </div>
+                <div class="pillar-card featured">
+                    <div class="pillar-num">02</div>
+                    <div class="pillar-icon"><i class="fa-solid fa-shield-halved"></i></div>
+                    <h3>Global Integrity</h3>
+                    <p>Ensuring cross-border compliance with the strictest international environmental standards and ethical sourcing frameworks across all markets.</p>
+                    <div class="pillar-arrow"><i class="fa-solid fa-arrow-up-right"></i></div>
+                </div>
+                <div class="pillar-card">
+                    <div class="pillar-num">03</div>
+                    <div class="pillar-icon"><i class="fa-solid fa-network-wired"></i></div>
+                    <h3>Connected Ecosystems</h3>
+                    <p>Building resilient, data-mapped supply chains that minimize waste and maximize resource circularity at every link of the industrial chain.</p>
+                    <div class="pillar-arrow"><i class="fa-solid fa-arrow-up-right"></i></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SOLUTIONS GRID -->
+        <section id="solutions" class="solutions-grid">
+            <div class="section-header light">
+                <p class="section-eyebrow">Our Services</p>
+                <h2>Comprehensive Global Solutions</h2>
+                <p>From water systems to renewable energy — our portfolio spans the full spectrum of sustainable industrial services.</p>
+            </div>
+            <div class="grid-container">
+                <div class="card card-image tall" style="background-image: url('https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&q=80&w=800');">
+                    <div class="card-overlay">
+                        <span class="card-tag">Ecosystem Protection</span>
+                        <h3>Natural Habitats</h3>
+                        <p>Protecting biodiversity at the core of every infrastructure project.</p>
+                    </div>
+                </div>
+
+                <div class="card card-image" style="background-image: url('https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&q=80&w=800');">
+                    <div class="card-overlay">
+                        <span class="card-tag">Hydrology</span>
+                        <h3>Water Preservation</h3>
+                        <p>Innovating how industries use our most precious resource.</p>
+                    </div>
+                </div>
+
+                <div class="card card-image" style="background-image: url('https://images.unsplash.com/photo-1464226184884-fa280b87c399?auto=format&fit=crop&q=80&w=800');">
+                    <div class="card-overlay">
+                        <span class="card-tag">Agri-Tech</span>
+                        <h3>Soil Moisture</h3>
+                        <p>Data-driven restoration of the earth's most vital foundation.</p>
+                    </div>
+                </div>
+
+                <div class="card card-image" style="background-image: url('https://images.unsplash.com/photo-1508514177221-188b1cf16e9d?auto=format&fit=crop&q=80&w=800');">
+                    <div class="card-overlay">
+                        <span class="card-tag">Renewables</span>
+                        <h3>Solar Integration</h3>
+                        <p>Harnessing clean energy at industrial and residential scale.</p>
+                    </div>
+                </div>
+
+                <div class="card card-image" style="background-image: url('https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?auto=format&fit=crop&q=80&w=800');">
+                    <div class="card-overlay">
+                        <span class="card-tag">Circular Economy</span>
+                        <h3>Eco-Recycling</h3>
+                        <p>Closing the loop on production and industrial consumption.</p>
+                    </div>
+                </div>
+
+                <div class="card card-image" style="background-image: url('https://images.unsplash.com/photo-1497215728101-856f4ea42174?auto=format&fit=crop&q=80&w=800');">
+                    <div class="card-overlay">
+                        <span class="card-tag">Urban Design</span>
+                        <h3>Sustainable Living</h3>
+                        <p>Designing homes and cities that give back to the environment.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CONTACT FORM -->
+        <section id="contact" class="contact-section">
+            <div class="contact-inner">
+                <div class="contact-info">
+                    <p class="section-eyebrow">Request a Consultation</p>
+                    <h2>Partner With<br><em>EchoFriendly</em></h2>
+                    <p>Whether you're scaling a sustainability initiative or building from the ground up, our global team is ready to deliver solutions tailored to your operational demands.</p>
+                    <ul class="contact-details">
+                        <li><i class="fa-solid fa-location-dot"></i> Global HQ — Geneva, Switzerland</li>
+                        <li><i class="fa-solid fa-envelope"></i> contact@echofriendly.com</li>
+                        <li><i class="fa-solid fa-phone"></i> +41 22 000 0000</li>
+                    </ul>
+                </div>
+                <div class="contact-form-wrap">
+                    <form class="contact-form" id="contact-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="fname">First Name</label>
+                                <input type="text" id="fname" placeholder="John">
+                            </div>
+                            <div class="form-group">
+                                <label for="lname">Last Name</label>
+                                <input type="text" id="lname" placeholder="Doe">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="company">Company / Organisation</label>
+                            <input type="text" id="company" placeholder="Global Corp Ltd.">
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Corporate Email</label>
+                            <input type="email" id="email" placeholder="john@globalcorp.com">
+                        </div>
+                        <div class="form-group">
+                            <label for="service">Area of Interest</label>
+                            <select id="service">
+                                <option value="" disabled selected>Select a service...</option>
+                                <option>Water Preservation</option>
+                                <option>Soil Restoration</option>
+                                <option>Solar Integration</option>
+                                <option>Eco-Recycling</option>
+                                <option>Sustainable Living</option>
+                                <option>Full Portfolio Partnership</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="message">Project Brief</label>
+                            <textarea id="message" placeholder="Describe your sustainability challenge or initiative..." rows="5"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-submit">
+                            Submit Consultation Request
+                            <i class="fa-solid fa-paper-plane"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="footer-top">
+            <div class="footer-brand">
+                <div class="logo footer-logo">
+                    <span class="logo-icon"><i class="fa-solid fa-leaf"></i></span>
+                    Echo<em>Friendly</em>
+                </div>
+                <p>Global leaders in sustainable industrial infrastructure. Building a better world, systematically.</p>
+                <div class="social-links">
+                    <a href="#" aria-label="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
+                    <a href="#" aria-label="Twitter"><i class="fa-brands fa-x-twitter"></i></a>
+                    <a href="#" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="#" aria-label="YouTube"><i class="fa-brands fa-youtube"></i></a>
+                </div>
+            </div>
+            <div class="footer-nav">
+                <h4>Company</h4>
+                <ul>
+                    <li><a href="#">About Us</a></li>
+                    <li><a href="#">Leadership</a></li>
+                    <li><a href="#">Careers</a></li>
+                    <li><a href="#">Press Room</a></li>
+                    <li><a href="#">ESG Report 2025</a></li>
+                </ul>
+            </div>
+            <div class="footer-nav">
+                <h4>Solutions</h4>
+                <ul>
+                    <li><a href="#">Industrial Scale</a></li>
+                    <li><a href="#">Urban Integration</a></li>
+                    <li><a href="#">Resource Mapping</a></li>
+                    <li><a href="#">Carbon Advisory</a></li>
+                    <li><a href="#">Compliance</a></li>
+                </ul>
+            </div>
+            <div class="footer-newsletter">
+                <h4>Global Insights</h4>
+                <p>Receive our quarterly sustainability intelligence briefing.</p>
+                <form class="newsletter-form">
+                    <input type="email" placeholder="Your corporate email">
+                    <button type="submit"><i class="fa-solid fa-arrow-right"></i></button>
+                </form>
+                <p class="newsletter-note">No spam. Unsubscribe anytime.</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 EchoFriendly Multinational S.A. All Rights Reserved.</p>
+            <div class="footer-legal">
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Service</a>
+                <a href="#">Cookie Policy</a>
+                <a href="#">Global Compliance</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- DP GENERATOR MODAL -->
+    <div class="dp-modal-overlay" id="dp-modal-overlay" onclick="closeDPModalOutside(event)">
+        <div class="dp-modal" id="dp-modal" role="dialog" aria-modal="true" aria-label="Create Your EchoFriendly DP">
+
+            <!-- Modal Header -->
+            <div class="dp-modal-header">
+                <div class="dp-modal-title">
+                    <span class="dp-modal-icon"><i class="fa-solid fa-leaf"></i></span>
+                    <div>
+                        <h3>Create Your EchoFriendly DP</h3>
+                        <p>Showcase your support for our ecosystem</p>
+                    </div>
+                </div>
+                <button class="dp-close-btn" onclick="closeDPModal()" aria-label="Close">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Step 1: Setup -->
+            <div class="dp-step" id="dp-step-setup">
+                <!-- Poster Preview -->
+                <div class="dp-preview-wrap">
+                    <canvas id="dp-canvas" width="800" height="800"></canvas>
+                    <div class="dp-drag-hint" id="dp-drag-hint">
+                        <i class="fa-solid fa-up-down-left-right"></i> Drag to adjust
+                    </div>
+                </div>
+
+                <!-- Controls -->
+                <div class="dp-controls">
+                    <!-- Name Input -->
+                    <div class="dp-field">
+                        <label for="dp-name">YOUR NAME <span>(Optional)</span></label>
+                        <input type="text" id="dp-name" placeholder="Enter your name..." maxlength="40">
+                    </div>
+
+                    <!-- Upload / Camera -->
+                    <div class="dp-upload-row" id="dp-upload-row">
+                        <label class="dp-upload-btn" for="dp-file-input">
+                            <i class="fa-solid fa-arrow-up-from-bracket"></i>
+                            <span>Upload Photo</span>
+                        </label>
+                        <input type="file" id="dp-file-input" accept="image/*" style="display:none">
+
+                        <label class="dp-upload-btn" for="dp-camera-input">
+                            <i class="fa-solid fa-camera"></i>
+                            <span>Open Camera</span>
+                        </label>
+                        <input type="file" id="dp-camera-input" accept="image/*" capture="user" style="display:none">
+                    </div>
+
+                    <!-- Zoom (shown after image is loaded) -->
+                    <div class="dp-zoom-row" id="dp-zoom-row" style="display:none">
+                        <label>ZOOM <span id="dp-zoom-value">100%</span></label>
+                        <div class="dp-zoom-control">
+                            <button class="dp-zoom-btn" onclick="adjustZoom(-10)"><i class="fa-solid fa-minus"></i></button>
+                            <input type="range" id="dp-zoom-slider" min="50" max="300" value="100">
+                            <button class="dp-zoom-btn" onclick="adjustZoom(10)"><i class="fa-solid fa-plus"></i></button>
+                        </div>
+                    </div>
+
+                    <!-- Generate Button -->
+                    <button class="dp-generate-btn" id="dp-generate-btn" onclick="generateDP()">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Generate DP
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 2: Result -->
+            <div class="dp-step" id="dp-step-result" style="display:none">
+                <!-- Generated Preview -->
+                <div class="dp-result-preview">
+                    <img id="dp-result-img" src="" alt="Your EchoFriendly DP">
+                    <div class="dp-result-badge">
+                        <i class="fa-solid fa-circle-check"></i> DP Ready!
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="dp-result-actions">
+                    <button class="dp-new-btn" onclick="resetDP()" title="Create a new DP">
+                        <i class="fa-solid fa-rotate"></i> <span>Reset</span>
+                    </button>
+                    <button class="dp-download-btn" id="dp-download-btn" onclick="downloadDP()">
+                        <i class="fa-solid fa-download"></i> Download
+                    </button>
+                    <button class="dp-social-btn whatsapp" onclick="shareWhatsApp()" title="Share on WhatsApp">
+                        <i class="fa-brands fa-whatsapp"></i>
+                    </button>
+                    <button class="dp-social-btn linkedin" onclick="shareLinkedIn()" title="Share on LinkedIn">
+                        <i class="fa-brands fa-linkedin-in"></i>
+                    </button>
+                </div>
+
+                <!-- Share Caption -->
+                <div class="dp-share-section">
+                    <div class="dp-share-header">
+                        <span>SHARE ON SOCIAL MEDIA</span>
+                        <button class="dp-copy-btn" onclick="copyCaption()" id="dp-copy-btn">
+                            <i class="fa-regular fa-copy"></i> Copy Caption
+                        </button>
+                    </div>
+                    <div class="dp-caption-box" id="dp-caption-box">🌿 Supporting our Ecosystem with EchoFriendly
+
+Proud to be part of a global movement for sustainable industrial infrastructure. Together, we can drive ecological excellence and build a greener world — one project at a time.
+
+🌍 Join us: echofriendly.com
+#EchoFriendly #SustainableInfrastructure #EcoSystem #GoGreen</div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- AUTH MODAL -->
+    <div class="dp-modal-overlay" id="auth-modal-overlay" onclick="closeAuthModalOutside(event)">
+        <div class="dp-modal auth-modal" id="auth-modal" role="dialog" aria-modal="true" aria-label="Authentication">
+            <div class="dp-modal-header" id="auth-modal-header">
+                <div class="dp-modal-title">
+                    <span class="dp-modal-icon"><i class="fa-solid fa-user-circle"></i></span>
+                    <div>
+                        <h3>Welcome to EchoFriendly</h3>
+                        <p>Access your global sustainability dashboard</p>
+                    </div>
+                </div>
+                <button class="dp-close-btn" onclick="closeAuthModal()" aria-label="Close">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            
+            <div class="auth-tabs" id="auth-tabs">
+                <button class="auth-tab active" id="tab-btn-login" onclick="switchAuthTab('login')">Login</button>
+                <button class="auth-tab" id="tab-btn-signup" onclick="switchAuthTab('signup')">Sign Up</button>
+            </div>
+
+            <!-- Login Step -->
+            <div class="dp-step auth-step active" id="auth-login-step">
+                <div class="dp-controls" style="width:100%;">
+                    <div class="dp-field">
+                        <label for="login-email">CORPORATE EMAIL / USERNAME</label>
+                        <input type="text" id="login-email" placeholder="john@globalcorp.com">
+                    </div>
+                    <div class="dp-field">
+                        <label for="login-password">PASSWORD</label>
+                        <input type="password" id="login-password" placeholder="••••••••">
+                    </div>
+                    <p id="login-error" style="color: red; font-size: 0.8rem; display: none;"></p>
+                    <button class="dp-generate-btn" style="margin-top: 1rem;" onclick="submitLogin()">
+                        <i class="fa-solid fa-right-to-bracket"></i> Login to Dashboard
+                    </button>
+                </div>
+            </div>
+
+            <!-- Signup Step -->
+            <div class="dp-step auth-step" id="auth-signup-step" style="display:none;">
+                <div class="dp-controls" style="width:100%;">
+                    <div class="dp-field">
+                        <label for="signup-name">FULL NAME</label>
+                        <input type="text" id="signup-name" placeholder="John Doe">
+                    </div>
+                    <div class="dp-field">
+                        <label for="signup-email">CORPORATE EMAIL</label>
+                        <input type="email" id="signup-email" placeholder="john@globalcorp.com">
+                    </div>
+                    <div class="dp-field">
+                        <label for="signup-password">PASSWORD</label>
+                        <input type="password" id="signup-password" placeholder="Create a strong password">
+                    </div>
+                    <p id="signup-error" style="color: red; font-size: 0.8rem; display: none;"></p>
+                    <button class="dp-generate-btn" style="margin-top: 1rem;" onclick="submitSignup()">
+                        <i class="fa-solid fa-user-plus"></i> Create Account
+                    </button>
+                </div>
+            </div>
+
+            <!-- OTP Verification Step -->
+            <div class="dp-step auth-step" id="auth-otp-step" style="display:none;">
+                <div class="dp-controls" style="width:100%;">
+                    <div style="margin-bottom: 1.5rem; text-align: center;">
+                        <i class="fa-solid fa-envelope-open-text" style="font-size: 2rem; color: var(--green-400); margin-bottom: 0.5rem;"></i>
+                        <h4 style="font-family: var(--font-ui); color: var(--text-primary); margin-bottom: 0.5rem;">Verify Your Email</h4>
+                        <p style="font-size: 0.85rem; color: var(--text-muted);">We've sent a verification code to <strong id="verify-email-display">your email</strong>. Please enter the code below to complete sign up.</p>
+                    </div>
+                    <div class="dp-field">
+                        <label for="otp-code">VERIFICATION CODE</label>
+                        <input type="text" id="otp-code" placeholder="123456" maxlength="6" style="text-align: center; font-size: 1.2rem; letter-spacing: 0.2rem;">
+                    </div>
+                    <p id="otp-error" style="color: red; font-size: 0.8rem; display: none;"></p>
+                    <p id="otp-success" style="color: green; font-size: 0.8rem; display: none;">Signup successful! Redirecting to login...</p>
+                    <button class="dp-generate-btn" style="margin-top: 1rem;" onclick="submitOTP()">
+                        <i class="fa-solid fa-check-circle"></i> Verify & Complete
+                    </button>
+                    <button class="btn btn-ghost" style="width: 100%; margin-top: 0.5rem; color: var(--text-muted); border: none;" onclick="switchAuthTab('signup')">
+                        Back to Signup
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1408.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js@6.3.6/dist/amazon-cognito-identity.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

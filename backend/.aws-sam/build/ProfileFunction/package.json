@@ -1,0 +1,9 @@
+{
+  "name": "echofriendly-backend",
+  "version": "1.0.0",
+  "description": "AWS SAM Backend for EchoFriendly",
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.556.0",
+    "@aws-sdk/lib-dynamodb": "^3.556.0"
+  }
+}

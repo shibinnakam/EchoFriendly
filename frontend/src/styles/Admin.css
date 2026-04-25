@@ -1,0 +1,80 @@
+:root {
+    --bg-pearl: #f8faf9;
+    --white: #ffffff;
+    --forest-900: #1a2e26;
+    --forest-600: #2d5a4a;
+    --forest-nav: #3e684a;
+    --sage-light: #dce7dd;
+    --slate-700: #334155;
+    --slate-400: #94a3b8;
+    --sidebar-w: 300px;
+}
+
+.admin-body {
+    background-color: #6a8d73;
+    min-height: 100vh;
+    display: flex;
+    font-family: 'Space Grotesk', sans-serif;
+}
+
+.sidebar {
+    width: var(--sidebar-w);
+    background: var(--white);
+    position: fixed;
+    height: 100vh;
+    padding: 3.5rem 2rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.hero-banner-react {
+    background-size: cover;
+    background-position: center;
+    border-radius: 40px;
+    padding: 2.5rem;
+    margin-bottom: 3rem;
+    display: flex;
+}
+
+.hero-card {
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(8px);
+    border-radius: 30px;
+    padding: 3rem 4rem;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.table-card {
+    background: white;
+    border-radius: 40px;
+    padding: 3rem;
+    box-shadow: 0 30px 60px rgba(0,0,0,0.08);
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table thead tr {
+    background: var(--sage-light);
+}
+
+.data-table th {
+    padding: 1.5rem 1.8rem;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+}
+
+.status-pill {
+    background: #dcfce7;
+    color: #166534;
+    padding: 8px 20px;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    font-weight: 800;
+}
