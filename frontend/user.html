@@ -8,6 +8,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js@6.3.6/dist/amazon-cognito-identity.min.js"></script>
+    <script src="auth-config.js"></script>
+    <script src="auth-guard.js"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
     <style>
         :root {
@@ -288,17 +291,7 @@
         const API_URL = 'https://dw2z2yix5k.execute-api.us-east-1.amazonaws.com/';
         const poolData = { UserPoolId: 'us-east-1_SZ2YkwiZW', ClientId: '4sdi4gt03g0ais2mbsavfdp530' };
 
-        // --- AUTH CHECK ---
-        if (typeof AmazonCognitoIdentity !== 'undefined') {
-            const userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
-            const user = userPool.getCurrentUser();
-            console.log('User Page Auth Check:', user ? 'User found' : 'No user');
-            if (!user) {
-                console.log('Redirecting to index.html due to no user session');
-                window.location.href = 'index.html';
-            }
-        }
-        // ------------------
+
 
         const userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
         
@@ -689,21 +682,55 @@
                 showToast("Please add a shipping address first.", "error");
                 switchView('profile');
                 setTimeout(() => {
-                    toggleCart(); // Close cart to show profile
-                    showAddrForm(); // Open the address form
+                    toggleCart();
+                    showAddrForm();
                 }, 500);
                 return;
             }
 
-            // If we have an address and items
-            showToast("Success! Your order is being placed.", "success");
+            const totalAmount = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const selectedAddr = addresses.find(a => a.isDefault) || addresses[0];
             
-            // Simulation: Clear cart after 2 seconds
+            // --- RAZORPAY INTEGRATION ---
+            const options = {
+                "key": "rzp_test_uGfS9YmC4YNo2i", // REPLACE THIS with your actual Razorpay Key ID
+                "amount": totalAmount * 100, // Amount is in paise (100 paise = 1 INR)
+                "currency": "INR",
+                "name": "EchoFriendly",
+                "description": "Sustainable Product Purchase",
+                "image": "greenechofriendly.png",
+                "handler": function (response) {
+                    // Payment Successful Logic
+                    showToast("Payment Successful! Order ID: " + response.razorpay_payment_id, "success");
+                    
+                    // Finalize Order
+                    finalizeOrder(response.razorpay_payment_id);
+                },
+                "prefill": {
+                    "contact": selectedAddr.mobile,
+                    "email": document.getElementById('user-email-input').value
+                },
+                "notes": {
+                    "address": `${selectedAddr.addressText}, ${selectedAddr.district}, Kerala`
+                },
+                "theme": { "color": "#1a2e26" }
+            };
+
+            const rzp = new Razorpay(options);
+            rzp.on('payment.failed', function (response) {
+                showToast("Payment Failed: " + response.error.description, "error");
+            });
+            
+            rzp.open();
+        }
+
+        async function finalizeOrder(paymentId) {
+            // Simulation: Clear cart and show success
             setTimeout(() => {
                 cart = [];
                 updateCartUI();
                 toggleCart();
-                showToast("Order placed successfully! Check 'My Orders' soon.", "success");
+                showToast("Order confirmed! Green delivery initiated.", "success");
             }, 1000);
         }
 

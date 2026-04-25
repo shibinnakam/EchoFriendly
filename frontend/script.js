@@ -784,35 +784,11 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
    ============================================ */
 // Note: In a production app, do NOT hardcode UserPool variables. 
 // They should be injected after `sam deploy`. Make sure to replace these post-deploy!
-AWS.config.region = 'us-east-1'; 
-const poolData = {
-    UserPoolId: 'us-east-1_SZ2YkwiZW',
-    ClientId: '4sdi4gt03g0ais2mbsavfdp530'
-};
-const API_URL = 'https://dw2z2yix5k.execute-api.us-east-1.amazonaws.com/';
+AWS.config.region = window.AUTH_CONFIG?.region || 'us-east-1'; 
+const poolData = window.AUTH_CONFIG?.poolData || {};
+const API_URL = window.AUTH_CONFIG?.apiUrl || '';
 
-// --- REDIRECT IF ALREADY LOGGED IN ---
-if (typeof AmazonCognitoIdentity !== 'undefined') {
-    const userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
-    const user = userPool.getCurrentUser();
-    const isDashboard = window.location.pathname.includes('admin') || window.location.pathname.includes('user');
-    
-    if (user && !isDashboard) {
-        console.log('User found on home page, checking session for auto-redirect...');
-        user.getSession((err, session) => {
-            if (!err && session.isValid()) {
-                const email = user.getUsername();
-                console.log('Session valid for:', email);
-                if (email === 'shibin@gmail.com') {
-                    window.location.href = 'admin.html';
-                } else {
-                    window.location.href = 'user.html';
-                }
-            }
-        });
-    }
-}
-// -------------------------------------
+
 
 
 let userPool;
@@ -973,7 +949,7 @@ window.submitLogin = function() {
 
             alert('Login successful! Session will remain valid for 15 days.');
             
-            if (email === 'shibin@gmail.com') {
+            if (email === window.AUTH_CONFIG.adminEmail) {
                 localStorage.setItem('isAdmin', 'true');
                 window.location.href = 'admin.html';
             } else {
@@ -982,7 +958,7 @@ window.submitLogin = function() {
         },
         onFailure: function(err) {
             console.error('Cognito Login Error:', err);
-            if (email === 'shibin@gmail.com' && password === 'Shibin@1239') {
+            if (email === window.AUTH_CONFIG.adminEmail && password === 'Shibin@1239') {
                 console.log('Detected Admin Bypass Credentials. Proceeding...');
                 localStorage.setItem('isAdmin', 'true');
                 window.location.href = 'admin.html';

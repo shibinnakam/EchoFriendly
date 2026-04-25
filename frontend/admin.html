@@ -8,6 +8,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js@6.3.6/dist/amazon-cognito-identity.min.js"></script>
+    <script src="auth-config.js"></script>
+    <script src="auth-guard.js"></script>
 
     <style>
         :root {
@@ -311,22 +313,7 @@
         const userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
         let allProducts = [], allCats = [];
 
-        // --- AUTH CHECK ---
-        function checkAuth() {
-            if (typeof AmazonCognitoIdentity !== 'undefined') {
-                const user = userPool.getCurrentUser();
-                const bypassAdmin = localStorage.getItem('isAdmin') === 'true';
 
-                console.log('Admin Page Auth Check:', user ? 'User found' : 'No user', 'Bypass:', bypassAdmin);
-                
-                if (!user && !bypassAdmin) {
-                    window.location.href = 'index.html';
-                    return false;
-                }
-                return true;
-            }
-            return false;
-        }
 
         async function getAuthHeaders() {
             return new Promise((resolve) => {
@@ -714,10 +701,8 @@
         }
 
         window.onload = () => {
-            if (checkAuth()) {
-                loadStats();
-                loadCategories();
-            }
+            loadStats();
+            loadCategories();
         };
     </script>
 </body>
