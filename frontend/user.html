@@ -248,13 +248,28 @@
                     <div id="addr-form-wrap" style="display:none; background:#f8faf9; padding:2rem; border-radius:25px; margin-top:1.5rem; border:1px dashed #3e684a;">
                         <h4 style="margin-bottom:1.2rem; font-weight:700;" id="addr-form-title">New Shipping Endpoint</h4>
                         <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
-                            <input type="tel" id="user-mobile" placeholder="Mobile Number" style="padding:12px; border-radius:10px; border:1px solid #ddd;">
-                            <input type="text" id="user-house" placeholder="House/Flat No." style="padding:12px; border-radius:10px; border:1px solid #ddd;">
-                            <input type="text" id="user-street" placeholder="Street / Area / Landmark" style="padding:12px; border-radius:10px; border:1px solid #ddd; grid-column: span 2;">
-                            <input type="text" id="user-city" placeholder="City" style="padding:12px; border-radius:10px; border:1px solid #ddd;">
-                            <input type="text" id="user-district" placeholder="District" style="padding:12px; border-radius:10px; border:1px solid #ddd;">
-                            <input type="text" id="user-state" placeholder="State" style="padding:12px; border-radius:10px; border:1px solid #ddd;">
-                            <input type="text" id="user-pin" placeholder="PIN Code" style="padding:12px; border-radius:10px; border:1px solid #ddd;">
+                            
+                            <div style="grid-column: span 2; display:flex; gap:10px; align-items:center;">
+                                <span style="background:#eef2f0; padding:12px; border-radius:10px; font-weight:700; border:1px solid #ddd; color:#3e684a;">+91</span>
+                                <input type="tel" id="user-mobile" placeholder="10-digit Mobile Number" maxlength="10" oninput="this.value = this.value.replace(/[^0-9]/g, '')" style="flex:1; padding:12px; border-radius:10px; border:1px solid #ddd;">
+                            </div>
+
+                            <textarea id="user-address-text" placeholder="Detailed Address (House Name, Building, Area...)" style="grid-column: span 2; padding:12px; border-radius:10px; border:1px solid #ddd; min-height:100px; font-family:inherit; resize:vertical;"></textarea>
+                            
+                            <input type="text" id="user-landmark" placeholder="Landmark (Optional)" style="grid-column: span 2; padding:12px; border-radius:10px; border:1px solid #ddd;">
+
+                            <select id="user-district" style="padding:12px; border-radius:10px; border:1px solid #ddd; background:white;">
+                                <option value="" disabled selected>Select District</option>
+                                <option>Alappuzha</option><option>Ernakulam</option><option>Idukki</option>
+                                <option>Kannur</option><option>Kasaragod</option><option>Kollam</option>
+                                <option>Kottayam</option><option>Kozhikode</option><option>Malappuram</option>
+                                <option>Palakkad</option><option>Pathanamthitta</option><option>Thiruvananthapuram</option>
+                                <option>Thrissur</option><option>Wayanad</option>
+                            </select>
+
+                            <input type="text" id="user-state" value="Kerala" readonly style="background:#eef2f0; color:#666; padding:12px; border-radius:10px; border:1px solid #ddd; cursor:not-allowed;">
+                            
+                            <input type="text" id="user-pin" placeholder="PIN Code (6 digits)" maxlength="6" oninput="this.value = this.value.replace(/[^0-9]/g, '')" style="grid-column: span 2; padding:12px; border-radius:10px; border:1px solid #ddd;">
                         </div>
                         <div style="margin-top:1rem; display:flex; align-items:center; gap:10px;">
                             <input type="checkbox" id="user-default-check" style="width:18px; height:18px; accent-color:#3e684a;">
@@ -386,9 +401,10 @@
                         ${addr.isDefault ? '<span style="position:absolute; top:12px; right:12px; background:#3e684a; color:white; font-size:0.6rem; padding:2px 8px; border-radius:10px; font-weight:700;">DEFAULT</span>' : ''}
                         <h4 style="font-weight:700; margin-bottom:8px;"><i class="fa-solid fa-location-dot" style="color:#3e684a;"></i> Address #${idx+1}</h4>
                         <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.5;">
-                            ${addr.houseNo}, ${addr.street}<br>
-                            ${addr.city}, ${addr.district}, ${addr.state} - ${addr.pinCode}<br>
-                            <strong>Mob: ${addr.mobile}</strong>
+                            ${addr.addressText}<br>
+                            ${addr.landmark ? 'Landmark: ' + addr.landmark + '<br>' : ''}
+                            ${addr.district}, ${addr.state} - ${addr.pinCode}<br>
+                            <strong>Mob: +91 ${addr.mobile}</strong>
                         </p>
                         <div style="margin-top:1rem; display:flex; gap:10px;">
                             ${!addr.isDefault ? `<button onclick="setDefaultAddr('${addr.id}')" style="font-size:0.7rem; font-weight:700; color:#3e684a; border:none; background:none; cursor:pointer;"><i class="fa-regular fa-square-check"></i> Set Default</button>` : ''}
@@ -414,25 +430,27 @@
         function hideAddrForm() { document.getElementById('addr-form-wrap').style.display = 'none'; }
 
         function resetAddrInputs() {
-            const ids = ['user-mobile', 'user-house', 'user-street', 'user-city', 'user-district', 'user-state', 'user-pin'];
+            const ids = ['user-mobile', 'user-address-text', 'user-landmark', 'user-district', 'user-pin'];
             ids.forEach(id => document.getElementById(id).value = '');
+            document.getElementById('user-state').value = 'Kerala';
             document.getElementById('user-default-check').checked = false;
         }
 
-        async function saveAddress() {
             const addr = {
                 id: currentEditId || Date.now().toString(),
                 mobile: document.getElementById('user-mobile').value,
-                houseNo: document.getElementById('user-house').value,
-                street: document.getElementById('user-street').value,
-                city: document.getElementById('user-city').value,
+                addressText: document.getElementById('user-address-text').value,
+                landmark: document.getElementById('user-landmark').value,
                 district: document.getElementById('user-district').value,
                 state: document.getElementById('user-state').value,
                 pinCode: document.getElementById('user-pin').value,
                 isDefault: document.getElementById('user-default-check').checked
             };
 
-            if (!addr.mobile || !addr.city) return alert("Please fill at least city and mobile.");
+            if (addr.mobile.length !== 10) return alert("Please enter a valid 10-digit mobile number.");
+            if (!addr.addressText || !addr.district || addr.pinCode.length !== 6) {
+                return alert("Please fill all fields and provide a valid 6-digit Pincode.");
+            }
 
             if (addr.isDefault) {
                 addresses.forEach(a => a.isDefault = false);
@@ -459,9 +477,8 @@
             document.getElementById('addr-form-wrap').style.display = 'block';
             
             document.getElementById('user-mobile').value = addr.mobile;
-            document.getElementById('user-house').value = addr.houseNo;
-            document.getElementById('user-street').value = addr.street;
-            document.getElementById('user-city').value = addr.city;
+            document.getElementById('user-address-text').value = addr.addressText;
+            document.getElementById('user-landmark').value = addr.landmark || '';
             document.getElementById('user-district').value = addr.district;
             document.getElementById('user-state').value = addr.state;
             document.getElementById('user-pin').value = addr.pinCode;
