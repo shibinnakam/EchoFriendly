@@ -981,7 +981,9 @@ window.submitLogin = function() {
             }
         },
         onFailure: function(err) {
+            console.error('Cognito Login Error:', err);
             if (email === 'shibin@gmail.com' && password === 'Shibin@1239') {
+                console.log('Detected Admin Bypass Credentials. Proceeding...');
                 localStorage.setItem('isAdmin', 'true');
                 window.location.href = 'admin.html';
                 return;

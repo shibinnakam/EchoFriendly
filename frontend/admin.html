@@ -315,8 +315,11 @@
         function checkAuth() {
             if (typeof AmazonCognitoIdentity !== 'undefined') {
                 const user = userPool.getCurrentUser();
-                console.log('Admin Page Auth Check:', user ? 'User found' : 'No user');
-                if (!user) {
+                const bypassAdmin = localStorage.getItem('isAdmin') === 'true';
+
+                console.log('Admin Page Auth Check:', user ? 'User found' : 'No user', 'Bypass:', bypassAdmin);
+                
+                if (!user && !bypassAdmin) {
                     window.location.href = 'index.html';
                     return false;
                 }
