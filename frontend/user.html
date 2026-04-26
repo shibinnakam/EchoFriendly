@@ -653,19 +653,35 @@
             
             list.filter(p => !p.isHidden).forEach(p => {
                 const catName = allCats.find(c => c.categoryId === p.categoryId)?.categoryName || 'Sustainability';
+                const stock = parseInt(p.stock) || 0;
+                
+                let stockStatus = '';
+                let isOutOfStock = stock <= 0;
+                let isLowStock = stock > 0 && stock <= (p.lowStockThreshold || 5);
+
+                if (isOutOfStock) {
+                    stockStatus = `<span style="color: #ef4444; font-size: 0.7rem; font-weight: 700; display: block; margin-top: 5px;"><i class="fa-solid fa-circle-xmark"></i> OUT OF STOCK</span>`;
+                } else if (isLowStock) {
+                    stockStatus = `<span style="color: #f59e0b; font-size: 0.7rem; font-weight: 700; display: block; margin-top: 5px;"><i class="fa-solid fa-triangle-exclamation"></i> ONLY ${stock} LEFT</span>`;
+                }
+
                 grid.innerHTML += `
-                    <div class="product-card">
+                    <div class="product-card" style="${isOutOfStock ? 'opacity: 0.8;' : ''}">
                         <div class="card-img-wrap">
-                            <img src="${p.images?.[0] || 'https://via.placeholder.com/200?text=No+Image'}">
+                            <img src="${p.images?.[0] || 'https://via.placeholder.com/200?text=No+Image'}" style="${isOutOfStock ? 'filter: grayscale(1);' : ''}">
                         </div>
                         <div class="card-body">
                             <span class="tag-pill">${catName}</span>
                             <h3>${p.productName}</h3>
+                            ${stockStatus}
                         </div>
                         <div class="card-footer">
                             <span class="price">₹${p.price}</span>
-                            <button class="btn-cart" onclick="addToCart('${p.productId}')">
-                                <i class="fa-solid fa-cart-plus"></i> Add to Cart
+                            <button class="btn-cart" 
+                                onclick="addToCart('${p.productId}')" 
+                                ${isOutOfStock ? 'disabled style="background: #94a3b8; cursor: not-allowed;"' : ''}>
+                                <i class="fa-solid ${isOutOfStock ? 'fa-ban' : 'fa-cart-plus'}"></i> 
+                                ${isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
                             </button>
                         </div>
                     </div>
@@ -685,8 +701,18 @@
         function addToCart(id) {
             const product = allProducts.find(p => p.productId === id);
             const existing = cart.find(item => item.productId === id);
+            const stock = parseInt(product.stock) || 0;
             
+            if (stock <= 0) {
+                showToast("This item is currently out of stock.", "error");
+                return;
+            }
+
             if (existing) {
+                if (existing.quantity >= stock) {
+                    showToast(`Sorry, only ${stock} available in total.`, "error");
+                    return;
+                }
                 existing.quantity++;
             } else {
                 cart.push({ ...product, quantity: 1 });
@@ -697,13 +723,15 @@
             
             // Success Animation
             const btn = event.currentTarget;
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<i class="fa-solid fa-check"></i> Added';
-            btn.style.background = '#3e684a';
-            setTimeout(() => {
-                if (btn) btn.innerHTML = originalText;
-                if (btn) btn.style.background = '#1a2e26';
-            }, 1000);
+            if (btn && btn.classList.contains('btn-cart')) {
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="fa-solid fa-check"></i> Added';
+                btn.style.background = '#3e684a';
+                setTimeout(() => {
+                    if (btn) btn.innerHTML = originalText;
+                    if (btn) btn.style.background = '#1a2e26';
+                }, 1000);
+            }
         }
 
         function updateCartUI() {
@@ -745,8 +773,16 @@
         }
 
         function adjustQty(index, delta) {
-            cart[index].quantity += delta;
-            if (cart[index].quantity <= 0) {
+            const item = cart[index];
+            const stock = parseInt(item.stock) || 0;
+
+            if (delta > 0 && item.quantity >= stock) {
+                showToast(`Limit reached. Only ${stock} units available.`, "error");
+                return;
+            }
+
+            item.quantity += delta;
+            if (item.quantity <= 0) {
                 cart.splice(index, 1);
             }
             updateCartUI();
