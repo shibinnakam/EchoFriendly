@@ -443,7 +443,7 @@
                 if (!user) return resolve({});
                 user.getSession((err, session) => {
                     if (err || !session.isValid()) return resolve({});
-                    resolve({ 'Authorization': session.getAccessToken().getJwtToken() });
+                    resolve({ 'Authorization': session.getIdToken().getJwtToken() });
                 });
             });
         }
