@@ -1,12 +1,13 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: 'echofriendly-backend SAM Template for EchoFriendly backend
-
-  '
+Description: echofriendly-backend SAM Template
 Globals:
   Function:
     Timeout: 10
     MemorySize: 128
+    Runtime: nodejs20.x
+    Architectures:
+    - x86_64
 Resources:
   UsersTable:
     Type: AWS::DynamoDB::Table
@@ -18,99 +19,6 @@ Resources:
       KeySchema:
       - AttributeName: userId
         KeyType: HASH
-  EchoUserPool:
-    Type: AWS::Cognito::UserPool
-    Properties:
-      AutoVerifiedAttributes:
-      - email
-      UsernameAttributes:
-      - email
-      Policies:
-        PasswordPolicy:
-          MinimumLength: 8
-          RequireLowercase: true
-          RequireNumbers: true
-          RequireSymbols: false
-          RequireUppercase: true
-  EchoUserPoolClient:
-    Type: AWS::Cognito::UserPoolClient
-    Properties:
-      ClientName: EchoFriendlyWebClient
-      UserPoolId:
-        Ref: EchoUserPool
-      GenerateSecret: false
-      ExplicitAuthFlows:
-      - ALLOW_USER_SRP_AUTH
-      - ALLOW_REFRESH_TOKEN_AUTH
-      - ALLOW_USER_PASSWORD_AUTH
-      AccessTokenValidity: 15
-      IdTokenValidity: 15
-      RefreshTokenValidity: 15
-      TokenValidityUnits:
-        AccessToken: minutes
-        IdToken: minutes
-        RefreshToken: days
-  EchoHttpApi:
-    Type: AWS::Serverless::HttpApi
-    Properties:
-      StageName: $default
-      Auth:
-        DefaultAuthorizer: CognitoAuthorizer
-        Authorizers:
-          CognitoAuthorizer:
-            IdentitySource: $request.header.Authorization
-            JwtConfiguration:
-              audience:
-              - Ref: EchoUserPoolClient
-              issuer:
-                Fn::Sub: https://cognito-idp.${AWS::Region}.amazonaws.com/${EchoUserPool}
-      CorsConfiguration:
-        AllowOrigins:
-        - https://echofriendly.netlify.app
-        - http://localhost:5173
-        AllowMethods:
-        - GET
-        - POST
-        - PUT
-        - DELETE
-        - OPTIONS
-        AllowHeaders:
-        - Content-Type
-        - Authorization
-        MaxAge: 3600
-  ProfileFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: ProfileFunction
-      Handler: handlers/profile.handler
-      Runtime: nodejs20.x
-      Architectures:
-      - x86_64
-      Environment:
-        Variables:
-          USERS_TABLE:
-            Ref: UsersTable
-      Policies:
-      - DynamoDBCrudPolicy:
-          TableName:
-            Ref: UsersTable
-      Events:
-        GetProfile:
-          Type: HttpApi
-          Properties:
-            ApiId:
-              Ref: EchoHttpApi
-            Path: /profile
-            Method: GET
-        UpdateProfile:
-          Type: HttpApi
-          Properties:
-            ApiId:
-              Ref: EchoHttpApi
-            Path: /profile
-            Method: POST
-    Metadata:
-      SamResourceId: ProfileFunction
   CategoriesTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -140,6 +48,12 @@ Resources:
           KeyType: HASH
         Projection:
           ProjectionType: ALL
+  OrdersTable:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      PrimaryKey:
+        Name: orderId
+        Type: String
   EchoMediaBucket:
     Type: AWS::S3::Bucket
     Properties:
@@ -174,14 +88,100 @@ Resources:
           Action: s3:GetObject
           Resource:
             Fn::Sub: arn:aws:s3:::${EchoMediaBucket}/*
+  EchoHttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      StageName: $default
+      Auth:
+        DefaultAuthorizer: CognitoAuthorizer
+        Authorizers:
+          CognitoAuthorizer:
+            IdentitySource: $request.header.Authorization
+            JwtConfiguration:
+              audience:
+              - Ref: EchoUserPoolClient
+              issuer:
+                Fn::Sub: https://cognito-idp.${AWS::Region}.amazonaws.com/${EchoUserPool}
+      CorsConfiguration:
+        AllowOrigins:
+        - https://echofriendly.netlify.app
+        - http://localhost:5173
+        AllowMethods:
+        - GET
+        - POST
+        - PUT
+        - DELETE
+        - OPTIONS
+        AllowHeaders:
+        - Content-Type
+        - Authorization
+        MaxAge: 3600
+  EchoUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      AutoVerifiedAttributes:
+      - email
+      UsernameAttributes:
+      - email
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireLowercase: true
+          RequireNumbers: true
+          RequireUppercase: true
+  EchoUserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: EchoFriendlyWebClient
+      UserPoolId:
+        Ref: EchoUserPool
+      GenerateSecret: false
+      ExplicitAuthFlows:
+      - ALLOW_USER_SRP_AUTH
+      - ALLOW_REFRESH_TOKEN_AUTH
+      - ALLOW_USER_PASSWORD_AUTH
+      AccessTokenValidity: 15
+      IdTokenValidity: 15
+      RefreshTokenValidity: 15
+      TokenValidityUnits:
+        AccessToken: minutes
+        IdToken: minutes
+        RefreshToken: days
+  ProfileFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ProfileFunction
+      Handler: handlers/profile.handler
+      Environment:
+        Variables:
+          USERS_TABLE:
+            Ref: UsersTable
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: UsersTable
+      Events:
+        GetProfile:
+          Type: HttpApi
+          Properties:
+            ApiId:
+              Ref: EchoHttpApi
+            Path: /profile
+            Method: GET
+        UpdateProfile:
+          Type: HttpApi
+          Properties:
+            ApiId:
+              Ref: EchoHttpApi
+            Path: /profile
+            Method: POST
+    Metadata:
+      SamResourceId: ProfileFunction
   InventoryFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: InventoryFunction
       Handler: handlers/inventory.handler
-      Runtime: nodejs20.x
-      Architectures:
-      - x86_64
       Environment:
         Variables:
           CATEGORIES_TABLE:
@@ -204,28 +204,14 @@ Resources:
           BucketName:
             Ref: EchoMediaBucket
       Events:
-        InventoryApiGet:
+        InventoryApi:
           Type: HttpApi
           Properties:
             ApiId:
               Ref: EchoHttpApi
             Path: /inventory/{proxy+}
-            Method: GET
-        InventoryApiPost:
-          Type: HttpApi
-          Properties:
-            ApiId:
-              Ref: EchoHttpApi
-            Path: /inventory/{proxy+}
-            Method: POST
-        InventoryApiDelete:
-          Type: HttpApi
-          Properties:
-            ApiId:
-              Ref: EchoHttpApi
-            Path: /inventory/{proxy+}
-            Method: DELETE
-        InventoryApiOptions:
+            Method: ANY
+        InventoryOptions:
           Type: HttpApi
           Properties:
             ApiId:
@@ -236,24 +222,17 @@ Resources:
               Authorizer: NONE
     Metadata:
       SamResourceId: InventoryFunction
-  OrdersTable:
-    Type: AWS::Serverless::SimpleTable
-    Properties:
-      PrimaryKey:
-        Name: orderId
-        Type: String
   OrdersFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: OrdersFunction
       Handler: handlers/orders.handler
-      Runtime: nodejs20.x
-      Architectures:
-      - x86_64
       Environment:
         Variables:
           ORDERS_TABLE:
             Ref: OrdersTable
+          PRODUCTS_TABLE:
+            Ref: ProductsTable
           RAZORPAY_KEY_ID: rzp_live_Si0FNwKgjvHkT1
           RAZORPAY_KEY_SECRET: 71v4wJXOx0U2KmwTcw2Yw8p7
           RAZORPAY_WEBHOOK_SECRET: echofriendlysecret
@@ -261,6 +240,9 @@ Resources:
       - DynamoDBCrudPolicy:
           TableName:
             Ref: OrdersTable
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: ProductsTable
       Events:
         CreateOrder:
           Type: HttpApi
@@ -303,30 +285,11 @@ Resources:
       SamResourceId: OrdersFunction
 Outputs:
   ApiEndpoint:
-    Description: API Gateway endpoint URL
     Value:
       Fn::Sub: https://${EchoHttpApi}.execute-api.${AWS::Region}.amazonaws.com/
   UserPoolId:
-    Description: Cognito User Pool ID
     Value:
       Ref: EchoUserPool
   UserPoolClientId:
-    Description: Cognito User Pool Client ID
     Value:
       Ref: EchoUserPoolClient
-  CategoriesTable:
-    Description: Categories DynamoDB Table
-    Value:
-      Ref: CategoriesTable
-  ProductsTable:
-    Description: Products DynamoDB Table
-    Value:
-      Ref: ProductsTable
-  OrdersTable:
-    Description: Orders DynamoDB Table
-    Value:
-      Ref: OrdersTable
-  MediaBucketName:
-    Description: S3 Bucket for Media
-    Value:
-      Ref: EchoMediaBucket
