@@ -952,7 +952,10 @@
                 const orderRes = await fetch(`${API_URL}orders/create`, {
                     method: 'POST',
                     headers: { ...h, 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ amount: totalAmount * 100 }) // Amount in paise
+                    body: JSON.stringify({ 
+                        amount: totalAmount * 100,
+                        items: cart.map(i => ({ productId: i.productId, qty: i.quantity }))
+                    })
                 });
                 const orderData = await orderRes.json();
                 
