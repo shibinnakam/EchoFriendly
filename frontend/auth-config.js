@@ -10,7 +10,7 @@ const AUTH_CONFIG = {
     },
     region: 'ap-south-1',
     apiUrl: 'https://sd2jkxbwqh.execute-api.ap-south-1.amazonaws.com/',
-    adminEmail: 'shibin@gmail.com'
+    adminEmail: 'shibinsaji2026@mca.ajce.in'
 };
 
 // Export for module systems if needed, but we'll also attach to window for vanilla JS
