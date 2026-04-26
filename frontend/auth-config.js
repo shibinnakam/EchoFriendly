@@ -5,12 +5,12 @@
 
 const AUTH_CONFIG = {
     poolData: {
-        UserPoolId: 'us-east-1_SZ2YkwiZW',
-        ClientId: '4sdi4gt03g0ais2mbsavfdp530'
+        UserPoolId: 'ap-south-1_ZuiT8sted',
+        ClientId: '5b8jcqhik3k0b5aostkbes8hig'
     },
-    region: 'us-east-1',
-    apiUrl: 'https://dw2z2yix5k.execute-api.us-east-1.amazonaws.com/',
-    adminEmail: 'shibin@gmail.com'
+    region: 'ap-south-1',
+    apiUrl: 'https://sd2jkxbwqh.execute-api.ap-south-1.amazonaws.com/',
+    adminEmail: 'shibinnakam@gmail.com'
 };
 
 // Export for module systems if needed, but we'll also attach to window for vanilla JS
