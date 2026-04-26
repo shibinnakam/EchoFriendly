@@ -78,7 +78,8 @@ Resources:
               issuer: !Sub https://cognito-idp.${AWS::Region}.amazonaws.com/${EchoUserPool}
       CorsConfiguration:
         AllowOrigins:
-          - "*"
+          - "https://echofriendly.netlify.app"
+          - "http://localhost:5173"
         AllowMethods:
           - GET
           - POST
@@ -88,6 +89,7 @@ Resources:
         AllowHeaders:
           - Content-Type
           - Authorization
+        MaxAge: 3600
 
   # --------------------------------------------------------- #
   # 4. Lambda Function (Node.js)
@@ -213,12 +215,98 @@ Resources:
         - S3ReadPolicy:
             BucketName: !Ref EchoMediaBucket
       Events:
-        InventoryApi:
+        InventoryApiGet:
+          Type: HttpApi
+        InventoryApiGet:
           Type: HttpApi
           Properties:
             ApiId: !Ref EchoHttpApi
             Path: /inventory/{proxy+}
-            Method: ANY
+            Method: GET
+        InventoryApiPost:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref EchoHttpApi
+            Path: /inventory/{proxy+}
+            Method: POST
+        InventoryApiDelete:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref EchoHttpApi
+            Path: /inventory/{proxy+}
+            Method: DELETE
+        InventoryApiOptions:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref EchoHttpApi
+            Path: /inventory/{proxy+}
+            Method: OPTIONS
+            Auth:
+              Authorizer: NONE
+
+  # --------------------------------------------------------- #
+  # 9. Orders Table
+  # --------------------------------------------------------- #
+  OrdersTable:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      PrimaryKey:
+        Name: orderId
+        Type: String
+
+  # --------------------------------------------------------- #
+  # 10. Orders Function (Razorpay Integration)
+  # --------------------------------------------------------- #
+  OrdersFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Handler: handlers/orders.handler
+      Runtime: nodejs20.x
+      Architectures:
+        - x86_64
+      Environment:
+        Variables:
+          ORDERS_TABLE: !Ref OrdersTable
+          RAZORPAY_KEY_ID: "rzp_live_Si0FNwKgjvHkT1" # User should replace this
+          RAZORPAY_KEY_SECRET: "71v4wJXOx0U2KmwTcw2Yw8p7" # User MUST replace this
+          RAZORPAY_WEBHOOK_SECRET: "echofriendlysecret" # User should set this in Razorpay
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref OrdersTable
+      Events:
+        CreateOrder:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref EchoHttpApi
+            Path: /orders/create
+            Method: POST
+        VerifyPayment:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref EchoHttpApi
+            Path: /orders/verify
+            Method: POST
+        Webhook:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref EchoHttpApi
+            Path: /orders/webhook
+            Method: POST
+            Auth:
+              Authorizer: NONE
+        ListOrders:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref EchoHttpApi
+            Path: /orders/list
+            Method: GET
+        ListUserOrders:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref EchoHttpApi
+            Path: /orders/user-list
+            Method: GET
 
 Outputs:
   ApiEndpoint:
@@ -236,6 +324,9 @@ Outputs:
   ProductsTable:
     Description: "Products DynamoDB Table"
     Value: !Ref ProductsTable
+  OrdersTable:
+    Description: "Orders DynamoDB Table"
+    Value: !Ref OrdersTable
   MediaBucketName:
     Description: "S3 Bucket for Media"
     Value: !Ref EchoMediaBucket

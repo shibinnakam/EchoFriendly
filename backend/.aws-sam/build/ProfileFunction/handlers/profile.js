@@ -68,7 +68,7 @@ function response(statusCode, body) {
         statusCode,
         headers: {
             'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*' // Required for CORS support to work
+            'Access-Control-Allow-Origin': 'https://echofriendly.netlify.app'
         },
         body: JSON.stringify(body)
     };

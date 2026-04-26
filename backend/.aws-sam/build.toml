@@ -5,8 +5,8 @@ codeuri = "D:\\echofriendly\\backend\\src"
 runtime = "nodejs20.x"
 architecture = "x86_64"
 handler = "handlers/profile.handler"
-manifest_hash = "cbf5533b9fc6b786bb9f125dc8654f32"
+manifest_hash = "2e67ad910c6d84cc79b17ed7b59f9e6e"
 packagetype = "Zip"
-functions = ["ProfileFunction", "InventoryFunction"]
+functions = ["ProfileFunction", "InventoryFunction", "OrdersFunction"]
 
 [layer_build_definitions]

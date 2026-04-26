@@ -254,18 +254,93 @@
             <span id="toast-msg">Please add an address first.</span>
         </div>
 
-        <!-- MARKETPLACE VIEW -->
-        <div id="view-market">
-            <div class="filter-bar">
-                <div class="search-wrap">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                    <input type="text" id="prod-search" placeholder="Discover sustainable products..." oninput="filterProducts()">
-                </div>
-                <select id="filter-cat" onchange="filterProducts()"><option value="">All Collections</option></select>
-            </div>
+        <!-- INVOICE MODAL -->
+        <div id="invoice-modal" class="cart-backdrop" style="display:none; z-index: 3000; align-items: center; justify-content: center; padding: 20px;" onclick="closeInvoice()">
+            <div id="invoice-content" style="background: white; width: 100%; max-width: 800px; padding: 3rem; border-radius: 20px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); position: relative;" onclick="event.stopPropagation()">
+                <i class="fa-solid fa-xmark close-cart" style="position: absolute; top: 20px; right: 25px;" onclick="closeInvoice()"></i>
+                <div id="invoice-printable">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom: 2rem; border-bottom: 2px solid #f1f5f3; padding-bottom: 1.5rem;">
+                        <div>
+                            <h1 style="font-family:'Cormorant Garamond',serif; color:#1a2e26; font-size:2.5rem; margin-bottom:5px;">TAX INVOICE</h1>
+                            <p style="font-size:0.9rem; color:#64748b; font-weight:600;" id="inv-id">INV-2024-0000</p>
+                        </div>
+                        <div style="text-align:right;">
+                            <h2 style="font-family:'Cormorant Garamond',serif; color:#3e684a; font-size:1.8rem; margin:0;">EchoFriendly</h2>
+                            <p style="font-size:0.75rem; color:#64748b;">Sustainable Marketplace Platform<br>support@echofriendly.com</p>
+                        </div>
+                    </div>
 
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2.5rem;">
+                        <div>
+                            <h4 style="font-size:0.7rem; color:#3e684a; text-transform:uppercase; letter-spacing:1px; margin-bottom:10px;">Billing To:</h4>
+                            <p style="font-size:0.9rem; line-height:1.5; color:#1a2e26;" id="inv-bill-to"></p>
+                        </div>
+                        <div style="text-align:right;">
+                            <h4 style="font-size:0.7rem; color:#3e684a; text-transform:uppercase; letter-spacing:1px; margin-bottom:10px;">Order Details:</h4>
+                            <p style="font-size:0.9rem; color:#1a2e26;">
+                                <strong>Date:</strong> <span id="inv-date"></span><br>
+                                <strong>Payment ID:</strong> <span id="inv-pay-id" style="font-size:0.8rem;"></span><br>
+                                <strong>Status:</strong> <span style="color:#15803d; font-weight:700;">PAID</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <table style="width:100%; border-collapse:collapse; margin-bottom:2rem;">
+                        <thead>
+                            <tr style="background:#f8faf9; border-bottom:1.5px solid #edf2f0;">
+                                <th style="text-align:left; padding:12px; font-size:0.75rem; text-transform:uppercase; color:#3e684a;">Item Description</th>
+                                <th style="text-align:center; padding:12px; font-size:0.75rem; text-transform:uppercase; color:#3e684a;">Qty</th>
+                                <th style="text-align:right; padding:12px; font-size:0.75rem; text-transform:uppercase; color:#3e684a;">Price</th>
+                                <th style="text-align:right; padding:12px; font-size:0.75rem; text-transform:uppercase; color:#3e684a;">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inv-items-body"></tbody>
+                    </table>
+
+                    <div style="display:flex; justify-content:flex-end;">
+                        <div style="width:250px;">
+                            <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #f1f5f3;">
+                                <span style="font-size:0.85rem; color:#64748b;">Subtotal</span>
+                                <span id="inv-subtotal" style="font-weight:600;">₹0</span>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; padding:15px 0; font-size:1.2rem; font-weight:800; color:#1a2e26;">
+                                <span>Grand Total</span>
+                                <span id="inv-total" style="color:#3e684a;">₹0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:3rem; padding-top:1.5rem; border-top:1px solid #f1f5f3; text-align:center;">
+                        <p style="font-size:0.75rem; color:#94a3b8; font-style:italic;">Thank you for supporting sustainable innovation. This is a computer generated invoice.</p>
+                    </div>
+                </div>
+                <div style="margin-top: 2rem; display:flex; justify-content:center; gap:15px;">
+                    <button class="btn-cart" onclick="window.print()"><i class="fa-solid fa-print"></i> Print Invoice</button>
+                    <button class="btn-qty" style="width:auto; padding:10px 20px;" onclick="closeInvoice()">Close</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MARKETPLACE VIEW -->
             <div id="product-grid" class="product-grid">
                 <!-- Products will be loaded here -->
+            </div>
+        </div>
+
+        <!-- ORDERS VIEW -->
+        <div id="view-orders" style="display:none;">
+            <div style="background: white; padding: 2.5rem; border-radius: 40px; border: 1px solid #edf2f0; box-shadow: 0 10px 30px rgba(0,0,0,0.02);">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem;">
+                    <h2 style="font-family:'Cormorant Garamond',serif; font-size:2.2rem; font-weight:700;">Purchase History</h2>
+                    <span style="font-size:0.8rem; color:var(--text-muted); font-weight:600; letter-spacing:1px; text-transform:uppercase;">Track Your Eco Impact</span>
+                </div>
+                <div id="orders-list-container" style="display:grid; gap: 1.5rem;">
+                    <!-- Orders load here -->
+                    <div style="text-align:center; padding:3rem; color:var(--text-muted);">
+                        <i class="fa-solid fa-spinner fa-spin" style="font-size:2rem; margin-bottom:1rem;"></i>
+                        <p>Syncing order logs...</p>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -691,6 +766,7 @@
             // Hide all views
             document.getElementById('view-market').style.display = 'none';
             document.getElementById('view-profile').style.display = 'none';
+            document.getElementById('view-orders').style.display = 'none';
             
             // Unset active class on all nav items
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
@@ -706,7 +782,81 @@
                 document.getElementById('view-profile').style.display = 'block';
                 document.getElementById('nav-profile').classList.add('active');
                 sub.innerText = 'MANAGE YOUR GLOBAL SUSTAINABILITY CREDENTIALS';
+            } else if (view === 'orders') {
+                document.getElementById('view-orders').style.display = 'block';
+                sub.innerText = 'HISTORY OF SUSTAINABLE ACQUISITIONS';
+                loadUserOrders();
             }
+        }
+
+        async function loadUserOrders() {
+            const container = document.getElementById('orders-list-container');
+            try {
+                const h = await getAuthHeaders();
+                const res = await fetch(`${API_URL}orders/user-list`, { headers: h });
+                const orders = await res.json();
+
+                if (!orders || orders.length === 0) {
+                    container.innerHTML = '<div style="text-align:center; padding:3rem; color:var(--text-muted);">No orders found. Start shopping to make an impact!</div>';
+                    return;
+                }
+
+                container.innerHTML = orders.map(order => `
+                    <div style="background:#f8faf9; border:1px solid #edf2f0; border-radius:25px; padding:1.5rem; display:flex; justify-content:space-between; align-items:center;">
+                        <div>
+                            <div style="display:flex; align-items:center; gap:10px; margin-bottom:5px;">
+                                <span style="background:#dcfce7; color:#15803d; font-size:0.6rem; font-weight:800; padding:3px 8px; border-radius:8px; text-transform:uppercase;">Confirmed</span>
+                                <span style="font-size:0.8rem; color:#64748b; font-weight:600;">${new Date(order.createdAt).toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric'})}</span>
+                            </div>
+                            <h4 style="font-weight:700; color:#1a2e26; margin-bottom:5px;">Order #${order.orderId.slice(-8).toUpperCase()}</h4>
+                            <p style="font-size:0.85rem; color:#64748b;">${order.items.length} Items • ₹${order.amount}</p>
+                        </div>
+                        <div style="display:flex; gap:10px;">
+                            <button class="btn-qty" style="width:auto; padding:10px 20px; font-weight:700;" onclick='showInvoice(${JSON.stringify(order)})'>
+                                <i class="fa-solid fa-file-invoice"></i> View Invoice
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                console.error("Orders load error:", err);
+                container.innerHTML = '<div style="text-align:center; padding:3rem; color:#ef4444;">Failed to sync orders. Please refresh.</div>';
+            }
+        }
+
+        function showInvoice(order) {
+            document.getElementById('inv-id').innerText = order.invoiceId || 'N/A';
+            document.getElementById('inv-date').innerText = new Date(order.createdAt).toLocaleDateString();
+            document.getElementById('inv-pay-id').innerText = order.paymentId;
+            
+            const addr = order.address;
+            document.getElementById('inv-bill-to').innerHTML = `
+                <strong>${document.getElementById('user-name-input').value}</strong><br>
+                ${addr.addressText}, ${addr.district}<br>
+                ${addr.state} - ${addr.pinCode}<br>
+                Mob: +91 ${addr.mobile}
+            `;
+
+            const tbody = document.getElementById('inv-items-body');
+            tbody.innerHTML = order.items.map(item => `
+                <tr style="border-bottom:1px solid #f1f5f3;">
+                    <td style="padding:12px; font-size:0.9rem;">${item.name}</td>
+                    <td style="padding:12px; text-align:center; font-size:0.9rem;">${item.qty}</td>
+                    <td style="padding:12px; text-align:right; font-size:0.9rem;">₹${(order.amount / order.items.reduce((a,b)=>a+b.qty,0)).toFixed(2)}</td>
+                    <td style="padding:12px; text-align:right; font-size:0.9rem; font-weight:600;">₹${(order.amount / order.items.reduce((a,b)=>a+b.qty,0) * item.qty).toFixed(2)}</td>
+                </tr>
+            `).join('');
+
+            document.getElementById('inv-subtotal').innerText = `₹${order.amount}`;
+            document.getElementById('inv-total').innerText = `₹${order.amount}`;
+            
+            document.getElementById('invoice-modal').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeInvoice() {
+            document.getElementById('invoice-modal').style.display = 'none';
+            document.body.style.overflow = 'auto';
         }
 
         function handleLogout() {
@@ -745,48 +895,91 @@
 
             const totalAmount = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
             const selectedAddr = addresses.find(a => a.isDefault) || addresses[0];
-            
-            // --- RAZORPAY INTEGRATION ---
-            const options = {
-                "key": "rzp_test_uGfS9YmC4YNo2i", // REPLACE THIS with your actual Razorpay Key ID
-                "amount": totalAmount * 100, // Amount is in paise (100 paise = 1 INR)
-                "currency": "INR",
-                "name": "EchoFriendly",
-                "description": "Sustainable Product Purchase",
-                "image": "greenechofriendly.png",
-                "handler": function (response) {
-                    // Payment Successful Logic
-                    showToast("Payment Successful! Order ID: " + response.razorpay_payment_id, "success");
-                    
-                    // Finalize Order
-                    finalizeOrder(response.razorpay_payment_id);
-                },
-                "prefill": {
-                    "contact": selectedAddr.mobile,
-                    "email": document.getElementById('user-email-input').value
-                },
-                "notes": {
-                    "address": `${selectedAddr.addressText}, ${selectedAddr.district}, Kerala`
-                },
-                "theme": { "color": "#1a2e26" }
-            };
+            const h = await getAuthHeaders();
 
-            const rzp = new Razorpay(options);
-            rzp.on('payment.failed', function (response) {
-                showToast("Payment Failed: " + response.error.description, "error");
-            });
-            
-            rzp.open();
+            try {
+                // 1. Create Order on Backend
+                const orderRes = await fetch(`${API_URL}orders/create`, {
+                    method: 'POST',
+                    headers: { ...h, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ amount: totalAmount * 100 }) // Amount in paise
+                });
+                const orderData = await orderRes.json();
+                
+                if (!orderData.id) throw new Error("Failed to create order");
+
+                // 2. Open Razorpay Checkout
+                const options = {
+                    "key": "rzp_live_Si0FNwKgjvHkT1", // Live Key
+                    "amount": orderData.amount,
+                    "currency": orderData.currency,
+                    "name": "EchoFriendly",
+                    "description": "Sustainable Product Purchase",
+                    "order_id": orderData.id,
+                    "handler": async function (response) {
+                        // 3. Verify Payment on Backend
+                        const user = userPool.getCurrentUser();
+                        let userId = 'guest';
+                        let userEmail = 'N/A';
+                        if (user) {
+                            userId = await new Promise(resolve => {
+                                user.getSession((err, session) => {
+                                    userEmail = session?.getIdToken().payload.email || 'N/A';
+                                    resolve(session?.getIdToken().payload.sub || 'guest');
+                                });
+                            });
+                        }
+                        
+                        const verifyRes = await fetch(`${API_URL}orders/verify`, {
+                            method: 'POST',
+                            headers: { ...h, 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                razorpay_order_id: response.razorpay_order_id,
+                                razorpay_payment_id: response.razorpay_payment_id,
+                                razorpay_signature: response.razorpay_signature,
+                                orderDetails: {
+                                    totalAmount,
+                                    items: cart.map(i => ({ id: i.productId, name: i.productName, qty: i.quantity })),
+                                    address: selectedAddr,
+                                    userId: userId,
+                                    userEmail: userEmail
+                                }
+                            })
+                        });
+                        const verifyData = await verifyRes.json();
+
+                        if (verifyData.status === 'success') {
+                            finalizeOrder(response.razorpay_payment_id);
+                        } else {
+                            showToast("Payment verification failed!", "error");
+                        }
+                    },
+                    "prefill": {
+                        "contact": selectedAddr.mobile,
+                        "email": document.getElementById('user-email-input').value
+                    },
+                    "theme": { "color": "#1a2e26" }
+                };
+
+                const rzp = new Razorpay(options);
+                rzp.on('payment.failed', function (response) {
+                    showToast("Payment Failed: " + response.error.description, "error");
+                });
+                rzp.open();
+
+            } catch (err) {
+                console.error("Order creation error:", err);
+                showToast("Could not initiate payment. Try again.", "error");
+            }
         }
 
         async function finalizeOrder(paymentId) {
-            // Simulation: Clear cart and show success
-            setTimeout(() => {
-                cart = [];
-                updateCartUI();
-                toggleCart();
-                showToast("Order confirmed! Green delivery initiated.", "success");
-            }, 1000);
+            cart = [];
+            updateCartUI();
+            toggleCart();
+            showToast("Order confirmed! Green delivery initiated.", "success");
+            // Optionally redirect to My Orders view
+            setTimeout(() => switchView('orders'), 2000);
         }
 
         window.onload = loadData;

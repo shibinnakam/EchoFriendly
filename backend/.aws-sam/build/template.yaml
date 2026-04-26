@@ -66,7 +66,8 @@ Resources:
                 Fn::Sub: https://cognito-idp.${AWS::Region}.amazonaws.com/${EchoUserPool}
       CorsConfiguration:
         AllowOrigins:
-        - '*'
+        - https://echofriendly.netlify.app
+        - http://localhost:5173
         AllowMethods:
         - GET
         - POST
@@ -76,6 +77,7 @@ Resources:
         AllowHeaders:
         - Content-Type
         - Authorization
+        MaxAge: 3600
   ProfileFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -202,15 +204,103 @@ Resources:
           BucketName:
             Ref: EchoMediaBucket
       Events:
-        InventoryApi:
+        InventoryApiGet:
           Type: HttpApi
           Properties:
             ApiId:
               Ref: EchoHttpApi
             Path: /inventory/{proxy+}
-            Method: ANY
+            Method: GET
+        InventoryApiPost:
+          Type: HttpApi
+          Properties:
+            ApiId:
+              Ref: EchoHttpApi
+            Path: /inventory/{proxy+}
+            Method: POST
+        InventoryApiDelete:
+          Type: HttpApi
+          Properties:
+            ApiId:
+              Ref: EchoHttpApi
+            Path: /inventory/{proxy+}
+            Method: DELETE
+        InventoryApiOptions:
+          Type: HttpApi
+          Properties:
+            ApiId:
+              Ref: EchoHttpApi
+            Path: /inventory/{proxy+}
+            Method: OPTIONS
+            Auth:
+              Authorizer: NONE
     Metadata:
       SamResourceId: InventoryFunction
+  OrdersTable:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      PrimaryKey:
+        Name: orderId
+        Type: String
+  OrdersFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: OrdersFunction
+      Handler: handlers/orders.handler
+      Runtime: nodejs20.x
+      Architectures:
+      - x86_64
+      Environment:
+        Variables:
+          ORDERS_TABLE:
+            Ref: OrdersTable
+          RAZORPAY_KEY_ID: rzp_live_Si0FNwKgjvHkT1
+          RAZORPAY_KEY_SECRET: 71v4wJXOx0U2KmwTcw2Yw8p7
+          RAZORPAY_WEBHOOK_SECRET: YOUR_WEBHOOK_SECRET
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: OrdersTable
+      Events:
+        CreateOrder:
+          Type: HttpApi
+          Properties:
+            ApiId:
+              Ref: EchoHttpApi
+            Path: /orders/create
+            Method: POST
+        VerifyPayment:
+          Type: HttpApi
+          Properties:
+            ApiId:
+              Ref: EchoHttpApi
+            Path: /orders/verify
+            Method: POST
+        Webhook:
+          Type: HttpApi
+          Properties:
+            ApiId:
+              Ref: EchoHttpApi
+            Path: /orders/webhook
+            Method: POST
+            Auth:
+              Authorizer: NONE
+        ListOrders:
+          Type: HttpApi
+          Properties:
+            ApiId:
+              Ref: EchoHttpApi
+            Path: /orders/list
+            Method: GET
+        ListUserOrders:
+          Type: HttpApi
+          Properties:
+            ApiId:
+              Ref: EchoHttpApi
+            Path: /orders/user-list
+            Method: GET
+    Metadata:
+      SamResourceId: OrdersFunction
 Outputs:
   ApiEndpoint:
     Description: API Gateway endpoint URL
@@ -232,6 +322,10 @@ Outputs:
     Description: Products DynamoDB Table
     Value:
       Ref: ProductsTable
+  OrdersTable:
+    Description: Orders DynamoDB Table
+    Value:
+      Ref: OrdersTable
   MediaBucketName:
     Description: S3 Bucket for Media
     Value:
