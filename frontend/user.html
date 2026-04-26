@@ -193,6 +193,14 @@
         .echo-toast.active { transform: translateY(0); opacity: 1; }
         .echo-toast i { color: #3e684a; font-size: 1.2rem; }
 
+        /* Variant Modal CSS */
+        .variant-option { padding: 15px; border: 2px solid #edf2f0; border-radius: 15px; margin-bottom: 10px; cursor: pointer; transition: 0.2s; display: flex; justify-content: space-between; align-items: center; }
+        .variant-option:hover { border-color: #3e684a; background: #f8faf9; }
+        .variant-option.selected { border-color: #3e684a; background: #f1f8f3; }
+        .variant-option .v-size { font-weight: 700; color: #1a2e26; font-size: 1.1rem; }
+        .variant-option .v-price { color: #3e684a; font-weight: 700; }
+        .variant-option .v-stock { font-size: 0.8rem; color: #64748b; }
+
         /* Product Info Modal */
         .info-icon { position: absolute; top: 12px; right: 12px; font-size: 1.2rem; color: #3e684a; cursor: pointer; background: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); z-index: 10; transition: var(--transition); }
         .info-icon:hover { transform: scale(1.1); color: #1a2e26; }
@@ -344,6 +352,17 @@
                 <div class="info-modal-content" id="info-modal-content">
                     <!-- Populated dynamically -->
                 </div>
+            </div>
+        </div>
+
+        <!-- VARIANT SELECTION MODAL -->
+        <div id="variant-modal" class="cart-backdrop" style="display:none; z-index: 3000; align-items: center; justify-content: center; padding: 20px;">
+            <div style="background: white; width: 100%; max-width: 500px; padding: 2.5rem; border-radius: 25px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); position: relative;" onclick="event.stopPropagation()">
+                <i class="fa-solid fa-xmark close-cart" style="position: absolute; top: 20px; right: 25px;" onclick="closeVariantModal()"></i>
+                <div id="variant-options-container" style="max-height: 50vh; overflow-y: auto; margin-bottom: 20px;">
+                    <!-- Populated dynamically -->
+                </div>
+                <button id="btn-confirm-variant" class="btn-checkout" disabled>Add Selected to Cart</button>
             </div>
         </div>
 
@@ -732,8 +751,62 @@
 
         function addToCart(id) {
             const product = allProducts.find(p => p.productId === id);
-            const existing = cart.find(item => item.productId === id);
-            const stock = parseInt(product.stock) || 0;
+            
+            if (product.variants && product.variants.length > 0) {
+                showVariantModal(product);
+                return;
+            }
+
+            confirmVariantAdd(product, null, product.price, parseInt(product.stock) || 0);
+        }
+
+        function showVariantModal(product) {
+            const content = document.getElementById('variant-options-container');
+            let html = `<h3 style="margin-bottom:15px; color:#1a2e26;">Select a variant</h3>`;
+            
+            product.variants.forEach((v) => {
+                const isOutOfStock = v.stock <= 0;
+                html += `
+                    <div class="variant-option" ${!isOutOfStock ? `onclick="selectVariantOption(this, '${product.productId}', '${v.size}', ${v.price}, ${v.stock})"` : 'style="opacity:0.6; cursor:not-allowed;"'}>
+                        <div>
+                            <div class="v-size">${v.size}</div>
+                            <div class="v-stock">${isOutOfStock ? '<span style="color:#ef4444;">Out of Stock</span>' : `In stock: ${v.stock}`}</div>
+                        </div>
+                        <div class="v-price">₹${v.price}</div>
+                    </div>
+                `;
+            });
+            content.innerHTML = html;
+            
+            document.getElementById('btn-confirm-variant').onclick = null;
+            document.getElementById('btn-confirm-variant').disabled = true;
+            document.getElementById('variant-modal').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        let pendingVariant = null;
+
+        function selectVariantOption(el, productId, size, price, stock) {
+            document.querySelectorAll('.variant-option').forEach(e => e.classList.remove('selected'));
+            el.classList.add('selected');
+            pendingVariant = { productId, size, price, stock };
+            document.getElementById('btn-confirm-variant').disabled = false;
+            document.getElementById('btn-confirm-variant').onclick = () => {
+                const p = allProducts.find(x => x.productId === pendingVariant.productId);
+                confirmVariantAdd(p, pendingVariant.size, pendingVariant.price, pendingVariant.stock);
+                closeVariantModal();
+            };
+        }
+
+        function closeVariantModal() {
+            document.getElementById('variant-modal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+            pendingVariant = null;
+        }
+
+        function confirmVariantAdd(product, variantSize, price, stock) {
+            const uniqueId = variantSize ? `${product.productId}_${variantSize}` : product.productId;
+            const existing = cart.find(item => item.cartItemId === uniqueId);
             
             if (stock <= 0) {
                 showToast("This item is currently out of stock.", "error");
@@ -747,7 +820,7 @@
                 }
                 existing.quantity++;
             } else {
-                cart.push({ ...product, quantity: 1 });
+                cart.push({ ...product, cartItemId: uniqueId, variantSize: variantSize, price: price, quantity: 1 });
             }
             
             updateCartUI();
@@ -788,7 +861,7 @@
                     <div class="cart-item">
                         <div class="cart-item-img"><img src="${item.images?.[0] || 'https://via.placeholder.com/60'}"></div>
                         <div class="cart-item-info">
-                            <h4>${item.productName}</h4>
+                            <h4>${item.productName} ${item.variantSize ? `(${item.variantSize})` : ''}</h4>
                             <p>₹${item.price}</p>
                             <div class="qty-controls">
                                 <button class="btn-qty" onclick="adjustQty(${index}, -1)">-</button>
@@ -1015,7 +1088,7 @@
                     headers: { ...h, 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
                         amount: totalAmount * 100,
-                        items: cart.map(i => ({ productId: i.productId, qty: i.quantity }))
+                        items: cart.map(i => ({ productId: i.productId, qty: i.quantity, variantSize: i.variantSize }))
                     })
                 });
                 const orderData = await orderRes.json();
@@ -1053,7 +1126,7 @@
                                 razorpay_signature: response.razorpay_signature,
                                 orderDetails: {
                                     totalAmount,
-                                    items: cart.map(i => ({ id: i.productId, name: i.productName, qty: i.quantity })),
+                                    items: cart.map(i => ({ id: i.productId, name: i.productName, qty: i.quantity, variantSize: i.variantSize })),
                                     address: selectedAddr,
                                     userId: userId,
                                     userEmail: userEmail
