@@ -820,7 +820,7 @@
                 }
                 existing.quantity++;
             } else {
-                cart.push({ ...product, cartItemId: uniqueId, variantSize: variantSize, price: price, quantity: 1 });
+                cart.push({ ...product, cartItemId: uniqueId, variantSize: variantSize, price: price, stock: stock, quantity: 1 });
             }
             
             updateCartUI();

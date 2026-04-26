@@ -31,8 +31,13 @@ exports.handler = async (event) => {
                 const product = res.Item;
                 if (!product) throw new Error(`Product not found: ${item.productId}`);
                 
-                // Use the official price from DB
-                calculatedTotal += parseFloat(product.price) * parseInt(item.qty);
+                let itemPrice = parseFloat(product.price);
+                if (item.variantSize && product.variants && product.variants.length > 0) {
+                    const variant = product.variants.find(v => v.size === item.variantSize);
+                    if (variant) itemPrice = parseFloat(variant.price);
+                }
+                
+                calculatedTotal += itemPrice * parseInt(item.qty);
             }
 
             const options = {
@@ -81,13 +86,29 @@ exports.handler = async (event) => {
                 // --- 2.1 DECREMENT STOCK FOR EACH ITEM ---
                 try {
                     for (const item of orderDetails.items) {
-                        await ddbDocClient.send(new UpdateCommand({
-                            TableName: process.env.PRODUCTS_TABLE,
-                            Key: { productId: item.id },
-                            UpdateExpression: 'SET stock = stock - :qty',
-                            ExpressionAttributeValues: { ':qty': parseInt(item.qty) },
-                            ConditionExpression: 'stock >= :qty'
-                        }));
+                        const pRes = await ddbDocClient.send(new GetCommand({ TableName: process.env.PRODUCTS_TABLE, Key: { productId: item.id } }));
+                        const p = pRes.Item;
+                        if (p) {
+                            if (item.variantSize && p.variants) {
+                                const vIdx = p.variants.findIndex(v => v.size === item.variantSize);
+                                if (vIdx > -1) {
+                                    await ddbDocClient.send(new UpdateCommand({
+                                        TableName: process.env.PRODUCTS_TABLE,
+                                        Key: { productId: item.id },
+                                        UpdateExpression: `SET variants[${vIdx}].stock = variants[${vIdx}].stock - :qty`,
+                                        ExpressionAttributeValues: { ':qty': parseInt(item.qty) }
+                                    }));
+                                }
+                            } else {
+                                await ddbDocClient.send(new UpdateCommand({
+                                    TableName: process.env.PRODUCTS_TABLE,
+                                    Key: { productId: item.id },
+                                    UpdateExpression: 'SET stock = stock - :qty',
+                                    ExpressionAttributeValues: { ':qty': parseInt(item.qty) },
+                                    ConditionExpression: 'stock >= :qty'
+                                }));
+                            }
+                        }
                     }
                 } catch (stockErr) {
                     console.error("Stock reduction error:", stockErr);
