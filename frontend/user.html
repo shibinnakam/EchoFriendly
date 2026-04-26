@@ -952,11 +952,11 @@
                     <p class="info-desc">${p.description || 'No detailed description available.'}</p>
                     
                     <div class="info-grid">
-                        ${p.ingredients && p.ingredients.length > 0 ? \`<div class="info-box" style="grid-column: span 2;"><span>Ingredients</span><p>\${p.ingredients.join(', ')}</p></div>\` : ''}
-                        ${p.manufactureDate ? \`<div class="info-box"><span>Mfg Date</span><p>\${new Date(p.manufactureDate).toLocaleDateString()}</p></div>\` : ''}
-                        ${p.expiryDate ? \`<div class="info-box"><span>Expiry Date</span><p>\${new Date(p.expiryDate).toLocaleDateString()}</p></div>\` : ''}
-                        ${p.shelfLife ? \`<div class="info-box"><span>Shelf Life</span><p>\${p.shelfLife}</p></div>\` : ''}
-                        ${p.storageInstruction ? \`<div class="info-box"><span>Storage</span><p>\${p.storageInstruction}</p></div>\` : ''}
+                        ${p.ingredients && p.ingredients.length > 0 ? '<div class="info-box" style="grid-column: span 2;"><span>Ingredients</span><p>' + p.ingredients.join(', ') + '</p></div>' : ''}
+                        ${p.manufactureDate ? '<div class="info-box"><span>Mfg Date</span><p>' + new Date(p.manufactureDate).toLocaleDateString() + '</p></div>' : ''}
+                        ${p.expiryDate ? '<div class="info-box"><span>Expiry Date</span><p>' + new Date(p.expiryDate).toLocaleDateString() + '</p></div>' : ''}
+                        ${p.shelfLife ? '<div class="info-box"><span>Shelf Life</span><p>' + p.shelfLife + '</p></div>' : ''}
+                        ${p.storageInstruction ? '<div class="info-box"><span>Storage</span><p>' + p.storageInstruction + '</p></div>' : ''}
                     </div>
                 </div>
             `;
