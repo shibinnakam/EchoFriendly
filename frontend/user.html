@@ -193,6 +193,22 @@
         .echo-toast.active { transform: translateY(0); opacity: 1; }
         .echo-toast i { color: #3e684a; font-size: 1.2rem; }
 
+        /* Product Info Modal */
+        .info-icon { position: absolute; top: 12px; right: 12px; font-size: 1.2rem; color: #3e684a; cursor: pointer; background: white; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); z-index: 10; transition: var(--transition); }
+        .info-icon:hover { transform: scale(1.1); color: #1a2e26; }
+        
+        .info-modal-content { display: grid; grid-template-columns: 1fr 1.5fr; gap: 2rem; }
+        .info-img-box { background: #f8faf9; border-radius: 20px; padding: 20px; display: flex; align-items: center; justify-content: center; min-height: 250px; }
+        .info-img-box img { width: 100%; height: 100%; object-fit: contain; max-height: 300px; }
+        .info-details h2 { font-family: 'Cormorant Garamond', serif; font-size: 2.2rem; color: #1a2e26; margin-bottom: 5px; }
+        .info-details .info-tag { display: inline-block; padding: 4px 12px; background: #eef2f0; color: #3e684a; border-radius: 50px; font-size: 0.75rem; font-weight: 700; margin-bottom: 15px; }
+        .info-desc { font-size: 0.95rem; color: #64748b; line-height: 1.6; margin-bottom: 20px; }
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .info-box { background: #f8faf9; padding: 15px; border-radius: 15px; border: 1px solid #edf2f0; }
+        .info-box span { display: block; font-size: 0.7rem; text-transform: uppercase; color: #3e684a; font-weight: 800; margin-bottom: 5px; }
+        .info-box p { font-size: 0.9rem; color: #1a2e26; font-weight: 600; }
+        @media (max-width: 768px) { .info-modal-content { grid-template-columns: 1fr; } }
+
     </style>
 </head>
 <body>
@@ -317,6 +333,16 @@
                 <div style="margin-top: 2rem; display:flex; justify-content:center; gap:15px;">
                     <button class="btn-cart" onclick="window.print()"><i class="fa-solid fa-print"></i> Print Invoice</button>
                     <button class="btn-qty" style="width:auto; padding:10px 20px;" onclick="closeInvoice()">Close</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PRODUCT INFO MODAL -->
+        <div id="info-modal" class="cart-backdrop" style="display:none; z-index: 3000; align-items: center; justify-content: center; padding: 20px;" onclick="closeProductInfo()">
+            <div style="background: white; width: 100%; max-width: 850px; padding: 2.5rem; border-radius: 25px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); position: relative; max-height: 90vh; overflow-y: auto;" onclick="event.stopPropagation()">
+                <i class="fa-solid fa-xmark close-cart" style="position: absolute; top: 20px; right: 25px;" onclick="closeProductInfo()"></i>
+                <div class="info-modal-content" id="info-modal-content">
+                    <!-- Populated dynamically -->
                 </div>
             </div>
         </div>
@@ -672,6 +698,7 @@
 
                 grid.innerHTML += `
                     <div class="product-card" style="${isOutOfStock ? 'opacity: 0.8;' : ''}">
+                        <i class="fa-solid fa-circle-info info-icon" onclick="showProductInfo('${p.productId}')" title="View details"></i>
                         <div class="card-img-wrap">
                             <img src="${p.images?.[0] || 'https://via.placeholder.com/200?text=No+Image'}" style="${isOutOfStock ? 'filter: grayscale(1);' : ''}">
                         </div>
@@ -906,6 +933,40 @@
 
         function closeInvoice() {
             document.getElementById('invoice-modal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        function showProductInfo(id) {
+            const p = allProducts.find(x => x.productId === id);
+            if (!p) return;
+            const catName = allCats.find(c => c.categoryId === p.categoryId)?.categoryName || 'Sustainability';
+            
+            const content = document.getElementById('info-modal-content');
+            content.innerHTML = `
+                <div class="info-img-box">
+                    <img src="${p.images?.[0] || 'https://via.placeholder.com/400?text=No+Image'}" alt="${p.productName}">
+                </div>
+                <div class="info-details">
+                    <span class="info-tag">${catName}</span>
+                    <h2>${p.productName}</h2>
+                    <p class="info-desc">${p.description || 'No detailed description available.'}</p>
+                    
+                    <div class="info-grid">
+                        ${p.ingredients && p.ingredients.length > 0 ? \`<div class="info-box" style="grid-column: span 2;"><span>Ingredients</span><p>\${p.ingredients.join(', ')}</p></div>\` : ''}
+                        ${p.manufactureDate ? \`<div class="info-box"><span>Mfg Date</span><p>\${new Date(p.manufactureDate).toLocaleDateString()}</p></div>\` : ''}
+                        ${p.expiryDate ? \`<div class="info-box"><span>Expiry Date</span><p>\${new Date(p.expiryDate).toLocaleDateString()}</p></div>\` : ''}
+                        ${p.shelfLife ? \`<div class="info-box"><span>Shelf Life</span><p>\${p.shelfLife}</p></div>\` : ''}
+                        ${p.storageInstruction ? \`<div class="info-box"><span>Storage</span><p>\${p.storageInstruction}</p></div>\` : ''}
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('info-modal').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeProductInfo() {
+            document.getElementById('info-modal').style.display = 'none';
             document.body.style.overflow = 'auto';
         }
 
