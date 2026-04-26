@@ -322,6 +322,15 @@
         </div>
 
         <!-- MARKETPLACE VIEW -->
+        <div id="view-market">
+            <div class="filter-bar">
+                <div class="search-wrap">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="prod-search" placeholder="Discover sustainable products..." oninput="filterProducts()">
+                </div>
+                <select id="filter-cat" onchange="filterProducts()"><option value="">All Collections</option></select>
+            </div>
+
             <div id="product-grid" class="product-grid">
                 <!-- Products will be loaded here -->
             </div>
