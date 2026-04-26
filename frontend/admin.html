@@ -511,7 +511,13 @@
                                 <div style="font-size:0.75rem; color:#64748b;">${o.userEmail || 'N/A'}</div>
                             </td>
                             <td><span style="font-weight:800; color:#3e684a;">₹${o.amount}</span></td>
-                            <td><span style="background:#dcfce7; color:#15803d; font-size:0.65rem; font-weight:800; padding:4px 10px; border-radius:50px; text-transform:uppercase;">Success</span></td>
+                            <td>
+                                <select onchange="updateOrderStatus('${o.orderId}', this.value)" style="padding:4px 8px; border-radius:6px; font-size:0.8rem; font-weight:700; border:1px solid #edf2f0; outline:none; cursor:pointer; background:#f8faf9; color:#1a2e26;">
+                                    <option value="Ordered" ${(!o.status || o.status==='Ordered') ? 'selected' : ''}>Ordered</option>
+                                    <option value="Shipped" ${o.status==='Shipped' ? 'selected' : ''}>Shipped</option>
+                                    <option value="Delivered" ${o.status==='Delivered' ? 'selected' : ''}>Delivered</option>
+                                </select>
+                            </td>
                             <td>
                                 <div class="action-btns">
                                     <i class="fa-solid fa-file-invoice" onclick='previewInvoice(${JSON.stringify(o)})' title="View Invoice"></i>
@@ -521,6 +527,22 @@
                     `;
                 });
             } catch (err) { console.error("Admin orders error:", err); }
+        }
+
+        async function updateOrderStatus(orderId, status) {
+            try {
+                const h = await getAuthHeaders();
+                const res = await fetch(`${API_URL}orders/status`, {
+                    method: 'PUT',
+                    headers: { ...h, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ orderId, status })
+                });
+                if (!res.ok) throw new Error('Failed to update status');
+                alert(`Order status updated to ${status}`);
+            } catch (err) {
+                console.error("Status update error:", err);
+                alert("Error updating order status.");
+            }
         }
 
         function previewInvoice(order) {

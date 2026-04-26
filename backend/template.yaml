@@ -245,6 +245,12 @@ Resources:
             ApiId: !Ref EchoHttpApi
             Path: /orders/user-list
             Method: GET
+        UpdateOrderStatus:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref EchoHttpApi
+            Path: /orders/status
+            Method: PUT
 
 Outputs:
   ApiEndpoint:

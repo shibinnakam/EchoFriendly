@@ -951,11 +951,17 @@
                     return;
                 }
 
-                container.innerHTML = orders.map(order => `
-                    <div style="background:#f8faf9; border:1px solid #edf2f0; border-radius:25px; padding:1.5rem; display:flex; justify-content:space-between; align-items:center;">
+                container.innerHTML = orders.map(order => {
+                    let statusBg = '#e0f2fe', statusColor = '#0369a1'; // Ordered (Blue)
+                    const statusText = order.status || 'Ordered';
+                    if (statusText === 'Shipped') { statusBg = '#f3e8ff'; statusColor = '#7e22ce'; } // Purple
+                    else if (statusText === 'Delivered') { statusBg = '#dcfce7'; statusColor = '#15803d'; } // Green
+
+                    return `
+                    <div style="background:#f8faf9; border:1px solid #edf2f0; border-radius:25px; padding:1.5rem; display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
                         <div>
                             <div style="display:flex; align-items:center; gap:10px; margin-bottom:5px;">
-                                <span style="background:#dcfce7; color:#15803d; font-size:0.6rem; font-weight:800; padding:3px 8px; border-radius:8px; text-transform:uppercase;">Confirmed</span>
+                                <span style="background:${statusBg}; color:${statusColor}; font-size:0.6rem; font-weight:800; padding:3px 8px; border-radius:8px; text-transform:uppercase;">${statusText}</span>
                                 <span style="font-size:0.8rem; color:#64748b; font-weight:600;">${new Date(order.createdAt).toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric'})}</span>
                             </div>
                             <h4 style="font-weight:700; color:#1a2e26; margin-bottom:5px;">Order #${order.orderId.slice(-8).toUpperCase()}</h4>
@@ -967,7 +973,7 @@
                             </button>
                         </div>
                     </div>
-                `).join('');
+                `}).join('');
             } catch (err) {
                 console.error("Orders load error:", err);
                 container.innerHTML = '<div style="text-align:center; padding:3rem; color:#ef4444;">Failed to sync orders. Please refresh.</div>';
