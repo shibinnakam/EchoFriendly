@@ -572,21 +572,37 @@
         }
 
         async function loadStats() {
-            const h = await getAuthHeaders();
-            const res = await fetch(`${API_URL}inventory/products`, { headers: h });
-            const data = await res.json();
-            document.getElementById('stat-total').innerText = data.length;
-            document.getElementById('stat-active').innerText = data.filter(p => !p.status || p.status === 'active').length;
-            document.getElementById('stat-low').innerText = data.filter(p => p.stock > 0 && p.stock < 10).length;
-            document.getElementById('stat-out').innerText = data.filter(p => parseInt(p.stock) === 0).length;
+            try {
+                const h = await getAuthHeaders();
+                const res = await fetch(`${API_URL}inventory/products`, { headers: h });
+                const data = await res.json();
+                
+                if (!Array.isArray(data)) {
+                    console.error("Stats fetch did not return an array:", data);
+                    return;
+                }
+
+                document.getElementById('stat-total').innerText = data.length;
+                document.getElementById('stat-active').innerText = data.filter(p => !p.status || p.status === 'active').length;
+                document.getElementById('stat-low').innerText = data.filter(p => p.stock > 0 && p.stock < 10).length;
+                document.getElementById('stat-out').innerText = data.filter(p => parseInt(p.stock) === 0).length;
+            } catch (err) { console.error("Stats load error:", err); }
         }
 
         async function loadProducts() {
-            const h = await getAuthHeaders();
-            const res = await fetch(`${API_URL}inventory/products`, { headers: h });
-            allProducts = await res.json();
-            allProducts.sort((a,b) => (b.updatedAt || 0) > (a.updatedAt || 0) ? 1 : -1);
-            renderProducts(allProducts);
+            try {
+                const h = await getAuthHeaders();
+                const res = await fetch(`${API_URL}inventory/products`, { headers: h });
+                allProducts = await res.json();
+                
+                if (!Array.isArray(allProducts)) {
+                    console.error("Products fetch did not return an array:", allProducts);
+                    allProducts = [];
+                }
+                
+                allProducts.sort((a,b) => (b.updatedAt || 0) > (a.updatedAt || 0) ? 1 : -1);
+                renderProducts(allProducts);
+            } catch (err) { console.error("Products load error:", err); }
         }
 
         function renderProducts(list) {
@@ -647,25 +663,33 @@
         }
 
         async function loadCategories() {
-            const h = await getAuthHeaders();
-            const res = await fetch(`${API_URL}inventory/categories`, { headers: h });
-            allCats = await res.json();
-            const body = document.getElementById('cat-table-body');
-            const select = document.getElementById('prod-cat-select');
-            const filterSelect = document.getElementById('filter-cat');
-            body.innerHTML = '';
-            if (select) select.innerHTML = '<option value="">Select Category</option>';
-            if (filterSelect) filterSelect.innerHTML = '<option value="">All Categories</option>';
-            allCats.forEach(c => {
-                body.innerHTML += `<tr>
-                    <td><img src="${c.categoryImage}" style="width:55px; height:55px; object-fit:cover; border-radius:12px;"></td>
-                    <td><strong>${c.categoryName}</strong></td>
-                    <td>${c.categoryId}</td>
-                    <td><div class="action-btns"><i class="fa-regular fa-pen-to-square" onclick="editCategory('${c.categoryId}')"></i><i class="fa-regular fa-trash-can" onclick="deleteCategory('${c.categoryId}')"></i></div></td>
-                </tr>`;
-                if (select) select.innerHTML += `<option value="${c.categoryId}">${c.categoryName}</option>`;
-                if (filterSelect) filterSelect.innerHTML += `<option value="${c.categoryId}">${c.categoryName}</option>`;
-            });
+            try {
+                const h = await getAuthHeaders();
+                const res = await fetch(`${API_URL}inventory/categories`, { headers: h });
+                allCats = await res.json();
+                
+                if (!Array.isArray(allCats)) {
+                    console.error("Categories fetch did not return an array:", allCats);
+                    allCats = [];
+                }
+
+                const body = document.getElementById('cat-table-body');
+                const select = document.getElementById('prod-cat-select');
+                const filterSelect = document.getElementById('filter-cat');
+                body.innerHTML = '';
+                if (select) select.innerHTML = '<option value="">Select Category</option>';
+                if (filterSelect) filterSelect.innerHTML = '<option value="">All Categories</option>';
+                allCats.forEach(c => {
+                    body.innerHTML += `<tr>
+                        <td><img src="${c.categoryImage}" style="width:55px; height:55px; object-fit:cover; border-radius:12px;"></td>
+                        <td><strong>${c.categoryName}</strong></td>
+                        <td>${c.categoryId}</td>
+                        <td><div class="action-btns"><i class="fa-regular fa-pen-to-square" onclick="editCategory('${c.categoryId}')"></i><i class="fa-regular fa-trash-can" onclick="deleteCategory('${c.categoryId}')"></i></div></td>
+                    </tr>`;
+                    if (select) select.innerHTML += `<option value="${c.categoryId}">${c.categoryName}</option>`;
+                    if (filterSelect) filterSelect.innerHTML += `<option value="${c.categoryId}">${c.categoryName}</option>`;
+                });
+            } catch (err) { console.error("Categories load error:", err); }
         }
 
         async function saveCategory() {

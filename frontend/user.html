@@ -449,52 +449,57 @@
         }
 
         async function loadData() {
-            const h = await getAuthHeaders();
-            const [pRes, cRes] = await Promise.all([
-                fetch(`${API_URL}inventory/products`, { headers: h }),
-                fetch(`${API_URL}inventory/categories`, { headers: h })
-            ]);
+            try {
+                const h = await getAuthHeaders();
+                const [pRes, cRes] = await Promise.all([
+                    fetch(`${API_URL}inventory/products`, { headers: h }),
+                    fetch(`${API_URL}inventory/categories`, { headers: h })
+                ]);
+                
+                allProducts = await pRes.json();
+                allCats = await cRes.json();
+                
+                if (!Array.isArray(allProducts)) allProducts = [];
+                if (!Array.isArray(allCats)) allCats = [];
             
-            allProducts = await pRes.json();
-            allCats = await cRes.json();
-            
-            // Load persistent cart
-            const savedCart = localStorage.getItem('ecoCart');
-            if (savedCart) {
-                cart = JSON.parse(savedCart);
-                updateCartUI();
-            }
+                // Load persistent cart
+                const savedCart = localStorage.getItem('ecoCart');
+                if (savedCart) {
+                    cart = JSON.parse(savedCart);
+                    updateCartUI();
+                }
 
-            // Populate Categories
-            const filterSelect = document.getElementById('filter-cat');
-            allCats.forEach(c => {
-                filterSelect.innerHTML += `<option value="${c.categoryId}">${c.categoryName}</option>`;
-            });
-
-            renderProducts(allProducts);
-            
-            // Set User Data
-            const user = userPool.getCurrentUser();
-            if (user) {
-                user.getSession((err, session) => {
-                    if (err || !session.isValid()) return;
-                    
-                    user.getUserAttributes((err, attrs) => {
-                        if (attrs) {
-                            const name = attrs.find(a => a.Name === 'name')?.Value || 'Partner';
-                            const email = attrs.find(a => a.Name === 'email')?.Value || 'Not available';
-                            
-                            document.getElementById('user-greeting').innerText = `Welcome Back, ${name}`;
-                            document.getElementById('user-name-input').value = name;
-                            document.getElementById('user-email-input').value = email;
-
-                            // Load Detailed Profile
-                            const userId = attrs.find(a => a.Name === 'sub')?.Value;
-                            if (userId) fetchUserProfile(userId);
-                        }
-                    });
+                // Populate Categories
+                const filterSelect = document.getElementById('filter-cat');
+                allCats.forEach(c => {
+                    filterSelect.innerHTML += `<option value="${c.categoryId}">${c.categoryName}</option>`;
                 });
-            }
+
+                renderProducts(allProducts);
+                
+                // Set User Data
+                const user = userPool.getCurrentUser();
+                if (user) {
+                    user.getSession((err, session) => {
+                        if (err || !session.isValid()) return;
+                        
+                        user.getUserAttributes((err, attrs) => {
+                            if (attrs) {
+                                const name = attrs.find(a => a.Name === 'name')?.Value || 'Partner';
+                                const email = attrs.find(a => a.Name === 'email')?.Value || 'Not available';
+                                
+                                document.getElementById('user-greeting').innerText = `Welcome Back, ${name}`;
+                                document.getElementById('user-name-input').value = name;
+                                document.getElementById('user-email-input').value = email;
+
+                                // Load Detailed Profile
+                                const userId = attrs.find(a => a.Name === 'sub')?.Value;
+                                if (userId) fetchUserProfile(userId);
+                            }
+                        });
+                    });
+                }
+            } catch (err) { console.error("Data load error:", err); }
         }
 
         let addresses = []; // array of { id, mobile, houseNo, street, city, district, state, pinCode, isDefault }
@@ -841,7 +846,7 @@
                 const res = await fetch(`${API_URL}orders/user-list`, { headers: h });
                 const orders = await res.json();
 
-                if (!orders || orders.length === 0) {
+                if (!Array.isArray(orders) || orders.length === 0) {
                     container.innerHTML = '<div style="text-align:center; padding:3rem; color:var(--text-muted);">No orders found. Start shopping to make an impact!</div>';
                     return;
                 }
