@@ -241,6 +241,7 @@
             <div class="nav-item" onclick="switchTab('cats')" id="tab-link-cats"><i class="fa-solid fa-layer-group"></i> Categories</div>
             <div class="nav-item" onclick="switchTab('prods')" id="tab-link-prods"><i class="fa-solid fa-basket-shopping"></i> Products</div>
             <div class="nav-item" onclick="switchTab('orders')" id="tab-link-orders"><i class="fa-solid fa-receipt"></i> Orders</div>
+            <div class="nav-item" onclick="switchTab('reports')" id="tab-link-reports"><i class="fa-solid fa-chart-line"></i> Sales Report</div>
         </nav>
         <div class="side-bottom"><div class="nav-item" style="color: #ef4444;" onclick="handleLogout()"><i class="fa-solid fa-right-from-bracket"></i> Logout</div></div>
     </aside>
@@ -252,12 +253,32 @@
         </header>
 
         <div id="section-dash" class="tab-section active">
+            <!-- KPI Stats Row 1: Inventory -->
             <section class="stats-grid">
                 <div class="stat-card"><div class="stat-icon"><i class="fa-solid fa-box-open"></i></div><div class="stat-data"><small>Total Products</small><h3 id="stat-total">0</h3></div></div>
                 <div class="stat-card"><div class="stat-icon"><i class="fa-solid fa-boxes-packing"></i></div><div class="stat-data"><small>Active Products</small><h3 id="stat-active">0</h3></div></div>
-                <div class="stat-card"><div class="stat-icon"><i class="fa-solid fa-layer-group"></i></div><div class="stat-data"><small>Low Stock</small><h3 id="stat-low">0</h3></div></div>
-                <div class="stat-card"><div class="stat-icon"><i class="fa-solid fa-tag"></i></div><div class="stat-data"><small>Out of Stock</small><h3 id="stat-out">0</h3></div></div>
+                <div class="stat-card"><div class="stat-icon"><i class="fa-solid fa-triangle-exclamation" style="color:#f59e0b;"></i></div><div class="stat-data"><small>Low Stock</small><h3 id="stat-low">0</h3></div></div>
+                <div class="stat-card"><div class="stat-icon"><i class="fa-solid fa-ban" style="color:#ef4444;"></i></div><div class="stat-data"><small>Out of Stock</small><h3 id="stat-out">0</h3></div></div>
             </section>
+
+            <!-- KPI Stats Row 2: Sales -->
+            <section class="stats-grid" style="margin-top:1rem;">
+                <div class="stat-card"><div class="stat-icon" style="background:#dcfce7;"><i class="fa-solid fa-indian-rupee-sign" style="color:#15803d;"></i></div><div class="stat-data"><small>Total Revenue</small><h3 id="stat-revenue" style="color:#15803d;">₹0</h3></div></div>
+                <div class="stat-card"><div class="stat-icon" style="background:#dbeafe;"><i class="fa-solid fa-bags-shopping" style="color:#1d4ed8;"></i></div><div class="stat-data"><small>Total Orders</small><h3 id="stat-orders">0</h3></div></div>
+                <div class="stat-card"><div class="stat-icon" style="background:#fef9c3;"><i class="fa-solid fa-truck" style="color:#a16207;"></i></div><div class="stat-data"><small>Delivered Orders</small><h3 id="stat-delivered">0</h3></div></div>
+                <div class="stat-card"><div class="stat-icon" style="background:#fee2e2;"><i class="fa-solid fa-xmark" style="color:#ef4444;"></i></div><div class="stat-data"><small>Cancelled Orders</small><h3 id="stat-cancelled">0</h3></div></div>
+            </section>
+
+            <!-- Top 5 Selling Products -->
+            <div style="margin-top:2rem; background:white; border-radius:30px; padding:2rem; box-shadow:0 10px 30px rgba(0,0,0,0.04); border:1px solid #edf2f0;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+                    <h2 style="font-family:'Cormorant Garamond',serif; font-size:1.8rem; color:#1a2e26;"><i class="fa-solid fa-trophy" style="color:#f59e0b; font-size:1.2rem;"></i> Top 5 Selling Products</h2>
+                    <span style="font-size:0.75rem; color:#64748b; font-weight:700; letter-spacing:1px;">BASED ON ALL ORDERS</span>
+                </div>
+                <div id="top-products-grid" style="display:grid; grid-template-columns:repeat(5,1fr); gap:1rem;">
+                    <div style="text-align:center; padding:2rem; color:#94a3b8;"><i class="fa-solid fa-spinner fa-spin"></i><p style="margin-top:8px; font-size:0.8rem;">Loading...</p></div>
+                </div>
+            </div>
         </div>
 
         <!-- CATEGORIES TAB WITH ADD & EDIT -->
@@ -394,6 +415,49 @@
             </div>
         </div>
 
+        <!-- SALES REPORT TAB -->
+        <div id="section-reports" class="tab-section">
+            <div class="section-header">
+                <h2>Sales Report</h2>
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <select id="report-year" onchange="renderSalesReport(allOrdersCache)" style="padding:10px 16px; border-radius:12px; border:1px solid #e2e8f0; font-weight:600; font-size:0.9rem; background:white;"></select>
+                    <button class="btn-plus" style="background:#3e684a;" onclick="loadStats()"><i class="fa-solid fa-rotate"></i> Refresh</button>
+                </div>
+            </div>
+
+            <!-- Summary Cards -->
+            <section class="stats-grid" style="margin-bottom:1.5rem;">
+                <div class="stat-card"><div class="stat-icon" style="background:#dcfce7;"><i class="fa-solid fa-indian-rupee-sign" style="color:#15803d;"></i></div><div class="stat-data"><small>Gross Revenue</small><h3 id="rpt-gross" style="color:#15803d;">&#8377;0</h3></div></div>
+                <div class="stat-card"><div class="stat-icon" style="background:#dbeafe;"><i class="fa-solid fa-cart-shopping" style="color:#1d4ed8;"></i></div><div class="stat-data"><small>Total Orders</small><h3 id="rpt-total">0</h3></div></div>
+                <div class="stat-card"><div class="stat-icon" style="background:#f3e8ff;"><i class="fa-solid fa-truck" style="color:#7e22ce;"></i></div><div class="stat-data"><small>Avg Order Value</small><h3 id="rpt-avg">&#8377;0</h3></div></div>
+                <div class="stat-card"><div class="stat-icon" style="background:#fee2e2;"><i class="fa-solid fa-rotate-left" style="color:#ef4444;"></i></div><div class="stat-data"><small>Refunded Amount</small><h3 id="rpt-refunded" style="color:#ef4444;">&#8377;0</h3></div></div>
+            </section>
+
+            <!-- Monthly Breakdown Table -->
+            <div class="table-card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+                    <h3 style="font-family:'Cormorant Garamond',serif; font-size:1.5rem;">Monthly Breakdown</h3>
+                    <span style="font-size:0.75rem; color:#64748b; font-weight:700; letter-spacing:1px;">EXCLUDES CANCELLED ORDERS</span>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Month</th>
+                            <th style="text-align:center;">Orders</th>
+                            <th style="text-align:center;">Delivered</th>
+                            <th style="text-align:center;">Cancelled</th>
+                            <th style="text-align:right;">Revenue</th>
+                            <th style="text-align:right;">Avg/Order</th>
+                            <th>Performance</th>
+                        </tr>
+                    </thead>
+                    <tbody id="report-table-body">
+                        <tr><td colspan="7" style="text-align:center; padding:2rem; color:#94a3b8;"><i class="fa-solid fa-spinner fa-spin"></i> Loading report...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
         <!-- INVOICE PREVIEW MODAL (ADMIN) -->
         <div id="invoice-modal" class="modal-overlay" style="display:none; z-index: 3000; align-items: center; justify-content: center; padding: 20px;" onclick="closeInvoice()">
             <div style="background: white; width: 100%; max-width: 850px; padding: 3rem; border-radius: 30px; position: relative;" onclick="event.stopPropagation()">
@@ -479,7 +543,8 @@
                 'dash': ['Executive Dashboard', 'REAL-TIME ECO-SYSTEM MONITORING'],
                 'cats': ['Catalogue Structure', 'MANAGE GLOBAL CATEGORY HIERARCHY'],
                 'prods': ['Inventory Matrix', 'CORE REPOSITORY FOR GLOBAL SUSTAINABLE PRODUCTS'],
-                'orders': ['Order Registry', 'TRACK GLOBAL SUSTAINABLE TRANSACTIONS']
+                'orders': ['Order Registry', 'TRACK GLOBAL SUSTAINABLE TRANSACTIONS'],
+                'reports': ['Sales Report', 'COMPREHENSIVE REVENUE & ORDER ANALYTICS']
             };
             const t = titles[tab] || titles['dash'];
             document.getElementById('page-title').innerText = t[0];
@@ -489,6 +554,7 @@
             if (tab === 'cats') loadCategories();
             if (tab === 'prods') { loadCategories(); loadProducts(); }
             if (tab === 'orders') loadAdminOrders();
+            if (tab === 'reports') loadStats();
         }
 
         async function loadAdminOrders() {
@@ -616,22 +682,65 @@
             document.body.style.overflow = 'auto';
         }
 
+        let allOrdersCache = [];
+
         async function loadStats() {
             try {
                 const h = await getAuthHeaders();
-                const res = await fetch(`${API_URL}inventory/products`, { headers: h });
-                const data = await res.json();
-                
-                if (!Array.isArray(data)) {
-                    console.error("Stats fetch did not return an array:", data);
-                    return;
+                const [prodRes, ordRes] = await Promise.all([
+                    fetch(`${API_URL}inventory/products`, { headers: h }),
+                    fetch(`${API_URL}orders/list`, { headers: h })
+                ]);
+                const products = await prodRes.json();
+                const orders = await ordRes.json();
+
+                // --- Inventory Stats ---
+                if (Array.isArray(products)) {
+                    document.getElementById('stat-total').innerText = products.length;
+                    document.getElementById('stat-active').innerText = products.filter(p => !p.status || p.status === 'active').length;
+                    document.getElementById('stat-low').innerText = products.filter(p => p.stock > 0 && p.stock < 10).length;
+                    document.getElementById('stat-out').innerText = products.filter(p => parseInt(p.stock) === 0).length;
                 }
 
-                document.getElementById('stat-total').innerText = data.length;
-                document.getElementById('stat-active').innerText = data.filter(p => !p.status || p.status === 'active').length;
-                document.getElementById('stat-low').innerText = data.filter(p => p.stock > 0 && p.stock < 10).length;
-                document.getElementById('stat-out').innerText = data.filter(p => parseInt(p.stock) === 0).length;
-            } catch (err) { console.error("Stats load error:", err); }
+                if (!Array.isArray(orders)) return;
+                allOrdersCache = orders;
+
+                // --- Order Stats ---
+                const activeOrders = orders.filter(o => o.status !== 'Cancelled');
+                const cancelledOrders = orders.filter(o => o.status === 'Cancelled');
+                const deliveredOrders = orders.filter(o => o.status === 'Delivered');
+                const totalRevenue = activeOrders.reduce((s, o) => s + (parseFloat(o.amount) || 0), 0);
+                const refundedAmt = cancelledOrders.reduce((s, o) => s + (parseFloat(o.amount) || 0), 0);
+
+                document.getElementById('stat-revenue').innerText = `₹${totalRevenue.toLocaleString('en-IN')}`;
+                document.getElementById('stat-orders').innerText = orders.length;
+                document.getElementById('stat-delivered').innerText = deliveredOrders.length;
+                document.getElementById('stat-cancelled').innerText = cancelledOrders.length;
+
+                // --- Top 5 Products ---
+                renderTopProducts(orders, products);
+
+                // --- Report page summaries ---
+                const avgVal = activeOrders.length ? (totalRevenue / activeOrders.length) : 0;
+                const rptGross = document.getElementById('rpt-gross');
+                const rptTotal = document.getElementById('rpt-total');
+                const rptAvg = document.getElementById('rpt-avg');
+                const rptRefunded = document.getElementById('rpt-refunded');
+                if (rptGross) rptGross.innerText = `₹${totalRevenue.toLocaleString('en-IN')}`;
+                if (rptTotal) rptTotal.innerText = orders.length;
+                if (rptAvg) rptAvg.innerText = `₹${Math.round(avgVal).toLocaleString('en-IN')}`;
+                if (rptRefunded) rptRefunded.innerText = `₹${refundedAmt.toLocaleString('en-IN')}`;
+
+                // Populate year filter
+                const years = [...new Set(orders.map(o => new Date(o.createdAt).getFullYear()))].sort((a,b)=>b-a);
+                const yearSel = document.getElementById('report-year');
+                if (yearSel) {
+                    yearSel.innerHTML = '<option value="all">All Years</option>' + years.map(y => `<option value="${y}">${y}</option>`).join('');
+                }
+
+                renderSalesReport(orders);
+
+            } catch (err) { console.error('Stats load error:', err); }
         }
 
         async function loadProducts() {
@@ -963,6 +1072,101 @@
                 await fetch(`${API_URL}inventory/products?productId=${id}`, { method: 'DELETE', headers: h }); 
                 loadProducts(); 
             } 
+        }
+
+        function renderTopProducts(orders, products) {
+            const grid = document.getElementById('top-products-grid');
+            if (!grid) return;
+
+            // Aggregate quantities per productId across non-cancelled orders
+            const salesMap = {};
+            orders.filter(o => o.status !== 'Cancelled').forEach(order => {
+                (order.items || []).forEach(item => {
+                    const id = item.id || item.productId;
+                    if (!salesMap[id]) salesMap[id] = { qty: 0, revenue: 0, name: item.name };
+                    salesMap[id].qty += parseInt(item.qty) || 0;
+                    salesMap[id].revenue += (parseFloat(order.amount) / (order.items.reduce((a,b) => a + (parseInt(b.qty)||0), 0))) * (parseInt(item.qty)||0);
+                });
+            });
+
+            const sorted = Object.entries(salesMap).sort((a,b) => b[1].qty - a[1].qty).slice(0, 5);
+
+            if (sorted.length === 0) {
+                grid.innerHTML = '<div style="grid-column:span 5; text-align:center; color:#94a3b8; padding:2rem;">No sales data yet.</div>';
+                return;
+            }
+
+            const medals = ['🥇','🥈','🥉','4️⃣','5️⃣'];
+            grid.style.gridTemplateColumns = `repeat(${sorted.length}, 1fr)`;
+            grid.innerHTML = sorted.map(([id, data], idx) => {
+                const product = (products || allProducts).find(p => p.productId === id);
+                const img = product?.images?.[0] || 'https://via.placeholder.com/80?text=N/A';
+                const maxQty = sorted[0][1].qty;
+                const barPct = Math.round((data.qty / maxQty) * 100);
+                return `
+                    <div style="background:#f8faf9; border-radius:20px; padding:1.2rem; text-align:center; border:1px solid ${idx===0?'#f59e0b':'#edf2f0'}; position:relative; transition:0.3s;" onmouseover="this.style.transform='translateY(-4px)'" onmouseout="this.style.transform='none'">
+                        <div style="font-size:1.4rem; margin-bottom:6px;">${medals[idx]}</div>
+                        <div style="width:70px; height:70px; border-radius:50%; overflow:hidden; margin:0 auto 10px; background:white; border:2px solid ${idx===0?'#f59e0b':'#edf2f0'}; display:flex; align-items:center; justify-content:center;">
+                            <img src="${img}" style="width:90%; height:90%; object-fit:contain;">
+                        </div>
+                        <h4 style="font-size:0.8rem; font-weight:700; color:#1a2e26; margin-bottom:4px; line-height:1.3;">${data.name || product?.productName || 'Unknown'}</h4>
+                        <div style="background:#e2e8f0; border-radius:10px; height:6px; margin:8px 0; overflow:hidden;">
+                            <div style="background:${idx===0?'#f59e0b':'#3e684a'}; height:100%; width:${barPct}%; border-radius:10px; transition:width 0.8s;"></div>
+                        </div>
+                        <p style="font-size:0.75rem; color:#3e684a; font-weight:800;">${data.qty} units sold</p>
+                        <p style="font-size:0.7rem; color:#64748b;">&#8377;${Math.round(data.revenue).toLocaleString('en-IN')}</p>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderSalesReport(orders) {
+            const tbody = document.getElementById('report-table-body');
+            if (!tbody) return;
+
+            const yearFilter = document.getElementById('report-year')?.value || 'all';
+            const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+            // Group orders by Year-Month
+            const grouped = {};
+            orders.forEach(o => {
+                const d = new Date(o.createdAt);
+                const yr = d.getFullYear();
+                if (yearFilter !== 'all' && yr !== parseInt(yearFilter)) return;
+                const key = `${yr}-${String(d.getMonth()+1).padStart(2,'0')}`;
+                if (!grouped[key]) grouped[key] = { year: yr, month: d.getMonth(), orders: 0, delivered: 0, cancelled: 0, revenue: 0 };
+                grouped[key].orders++;
+                if (o.status === 'Delivered') grouped[key].delivered++;
+                if (o.status === 'Cancelled') grouped[key].cancelled++;
+                if (o.status !== 'Cancelled') grouped[key].revenue += parseFloat(o.amount) || 0;
+            });
+
+            const rows = Object.entries(grouped).sort((a,b) => b[0].localeCompare(a[0]));
+            if (rows.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:2rem; color:#94a3b8;">No orders found for selected period.</td></tr>';
+                return;
+            }
+
+            const maxRev = Math.max(...rows.map(r => r[1].revenue), 1);
+            tbody.innerHTML = rows.map(([key, d]) => {
+                const barW = Math.round((d.revenue / maxRev) * 100);
+                const avg = d.orders - d.cancelled > 0 ? Math.round(d.revenue / (d.orders - d.cancelled)) : 0;
+                return `
+                    <tr>
+                        <td><strong>${monthNames[d.month]} ${d.year}</strong></td>
+                        <td style="text-align:center;"><span style="background:#dbeafe; color:#1d4ed8; padding:3px 10px; border-radius:8px; font-weight:700; font-size:0.85rem;">${d.orders}</span></td>
+                        <td style="text-align:center;"><span style="background:#dcfce7; color:#15803d; padding:3px 10px; border-radius:8px; font-weight:700; font-size:0.85rem;">${d.delivered}</span></td>
+                        <td style="text-align:center;"><span style="background:#fee2e2; color:#ef4444; padding:3px 10px; border-radius:8px; font-weight:700; font-size:0.85rem;">${d.cancelled}</span></td>
+                        <td style="text-align:right;"><strong style="color:#3e684a;">&#8377;${d.revenue.toLocaleString('en-IN')}</strong></td>
+                        <td style="text-align:right; color:#64748b;">&#8377;${avg.toLocaleString('en-IN')}</td>
+                        <td style="min-width:120px;">
+                            <div style="background:#f1f5f3; border-radius:6px; height:8px; overflow:hidden;">
+                                <div style="background:linear-gradient(90deg,#3e684a,#15803d); height:100%; width:${barW}%; border-radius:6px;"></div>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
         }
 
         function handleLogout() {
