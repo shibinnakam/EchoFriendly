@@ -222,6 +222,72 @@ exports.handler = async (event) => {
             };
         }
 
+        // --- 6. CANCEL ORDER (USER) ---
+        if (routeKey === 'PUT /orders/cancel') {
+            const userId = requestContext.authorizer?.jwt?.claims?.sub;
+            if (!userId) return { statusCode: 401, headers: { 'Access-Control-Allow-Origin': '*' }, body: 'Unauthorized' };
+
+            const { orderId } = data;
+            
+            const res = await ddbDocClient.send(new GetCommand({
+                TableName: process.env.ORDERS_TABLE,
+                Key: { orderId: orderId }
+            }));
+            
+            const order = res.Item;
+            if (!order) return { statusCode: 404, headers: { 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify({ message: 'Order not found' }) };
+            
+            if (order.userId !== userId) return { statusCode: 403, headers: { 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify({ message: 'Forbidden' }) };
+            
+            if (order.status === 'Delivered' || order.status === 'Cancelled') {
+                return { statusCode: 400, headers: { 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify({ message: `Cannot cancel an order with status: ${order.status}` }) };
+            }
+            
+            await ddbDocClient.send(new UpdateCommand({
+                TableName: process.env.ORDERS_TABLE,
+                Key: { orderId: orderId },
+                UpdateExpression: 'SET #s = :status',
+                ExpressionAttributeNames: { '#s': 'status' },
+                ExpressionAttributeValues: { ':status': 'Cancelled' }
+            }));
+            
+            // Re-increment stock
+            try {
+                for (const item of order.items) {
+                    const pRes = await ddbDocClient.send(new GetCommand({ TableName: process.env.PRODUCTS_TABLE, Key: { productId: item.id } }));
+                    const p = pRes.Item;
+                    if (p) {
+                        if (item.variantSize && p.variants) {
+                            const vIdx = p.variants.findIndex(v => v.size === item.variantSize);
+                            if (vIdx > -1) {
+                                await ddbDocClient.send(new UpdateCommand({
+                                    TableName: process.env.PRODUCTS_TABLE,
+                                    Key: { productId: item.id },
+                                    UpdateExpression: `SET variants[${vIdx}].stock = variants[${vIdx}].stock + :qty`,
+                                    ExpressionAttributeValues: { ':qty': parseInt(item.qty) }
+                                }));
+                            }
+                        } else {
+                            await ddbDocClient.send(new UpdateCommand({
+                                TableName: process.env.PRODUCTS_TABLE,
+                                Key: { productId: item.id },
+                                UpdateExpression: 'SET stock = stock + :qty',
+                                ExpressionAttributeValues: { ':qty': parseInt(item.qty) }
+                            }));
+                        }
+                    }
+                }
+            } catch (stockErr) {
+                console.error("Stock restore error:", stockErr);
+            }
+
+            return {
+                statusCode: 200,
+                headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+                body: JSON.stringify({ message: 'Order cancelled successfully' }),
+            };
+        }
+
         return { statusCode: 404, body: 'Not Found' };
     } catch (err) {
         console.error('Error:', err);

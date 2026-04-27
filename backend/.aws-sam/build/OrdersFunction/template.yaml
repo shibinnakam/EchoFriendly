@@ -251,6 +251,12 @@ Resources:
             ApiId: !Ref EchoHttpApi
             Path: /orders/status
             Method: PUT
+        CancelOrder:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref EchoHttpApi
+            Path: /orders/cancel
+            Method: PUT
 
 Outputs:
   ApiEndpoint:
