@@ -1017,10 +1017,10 @@
             
             const invStatus = document.getElementById('inv-status');
             if (order.status === 'Cancelled') {
-                if (order.refundId) {
-                    invStatus.innerHTML = `<span style="color:#ef4444;">REFUND COMPLETED & CANCELLED</span><br><span style="font-size:0.7rem; color:#64748b; font-weight:600;">Refund ID: ${order.refundId}</span>`;
+                if (order.refundStatus === 'completed' && order.refundId) {
+                    invStatus.innerHTML = `<span style="color:#15803d;">✓ REFUND COMPLETED</span><br><span style="font-size:0.7rem; color:#64748b; font-weight:600;">Refund ID: ${order.refundId}</span><br><span style="font-size:0.7rem; color:#64748b;">Order Cancelled</span>`;
                 } else {
-                    invStatus.innerHTML = `<span style="color:#f59e0b;">CANCELLED — REFUND PENDING</span>`;
+                    invStatus.innerHTML = `<span style="color:#ef4444; font-weight:800;">ORDER CANCELLED</span><br><span style="font-size:0.7rem; color:#f59e0b; font-weight:700;">⏳ Refund Pending — amount will be credited within 5-7 business days</span>`;
                 }
             } else {
                 invStatus.innerText = 'PAID';
