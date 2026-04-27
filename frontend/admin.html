@@ -417,6 +417,10 @@
                         <div style="text-align:right;">
                             <h4 style="font-size:0.7rem; color:#3e684a; text-transform:uppercase; margin-bottom:8px;">Metadata:</h4>
                             <p id="adm-inv-meta" style="font-size:0.9rem; line-height:1.4;"></p>
+                            <div style="margin-top:10px;">
+                                <span style="font-size:0.7rem; font-weight:800; text-transform:uppercase; color:#3e684a;">Payment Status:</span><br>
+                                <span id="adm-inv-status" style="font-weight:800; font-size:0.9rem; color:#15803d;">PAID</span>
+                            </div>
                         </div>
                     </div>
                     <table style="width:100%; border-collapse:collapse;">
@@ -512,7 +516,7 @@
                             </td>
                             <td><span style="font-weight:800; color:#3e684a;">₹${o.amount}</span></td>
                             <td>
-                                <select onchange="updateOrderStatus('${o.orderId}', this.value)" style="padding:4px 8px; border-radius:6px; font-size:0.8rem; font-weight:700; border:1px solid #edf2f0; outline:none; cursor:pointer; background:${o.status === 'Cancelled' ? '#fee2e2' : '#f8faf9'}; color:${o.status === 'Cancelled' ? '#ef4444' : '#1a2e26'};">
+                                <select onchange="updateOrderStatus('${o.orderId}', this.value)" style="padding:4px 8px; border-radius:6px; font-size:0.8rem; font-weight:700; border:1px solid #edf2f0; outline:none; cursor:${o.status === 'Cancelled' ? 'not-allowed' : 'pointer'}; background:${o.status === 'Cancelled' ? '#fee2e2' : '#f8faf9'}; color:${o.status === 'Cancelled' ? '#ef4444' : '#1a2e26'};" ${o.status === 'Cancelled' ? 'disabled' : ''}>
                                     <option value="Ordered" ${(!o.status || o.status==='Ordered') ? 'selected' : ''}>Ordered</option>
                                     <option value="Shipped" ${o.status==='Shipped' ? 'selected' : ''}>Shipped</option>
                                     <option value="Delivered" ${o.status==='Delivered' ? 'selected' : ''}>Delivered</option>
@@ -558,6 +562,15 @@
                 <strong>Payment ID:</strong> ${order.paymentId}<br>
                 <strong>Order ID:</strong> ${order.orderId}
             `;
+
+            const admStatus = document.getElementById('adm-inv-status');
+            if (order.status === 'Cancelled') {
+                admStatus.innerText = 'REFUND COMPLETED & CANCELLED';
+                admStatus.style.color = '#ef4444';
+            } else {
+                admStatus.innerText = 'PAID';
+                admStatus.style.color = '#15803d';
+            }
             
             const tbody = document.getElementById('adm-inv-items');
             tbody.innerHTML = order.items.map(i => `

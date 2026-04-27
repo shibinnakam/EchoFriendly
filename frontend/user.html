@@ -304,7 +304,7 @@
                             <p style="font-size:0.9rem; color:#1a2e26;">
                                 <strong>Date:</strong> <span id="inv-date"></span><br>
                                 <strong>Payment ID:</strong> <span id="inv-pay-id" style="font-size:0.8rem;"></span><br>
-                                <strong>Status:</strong> <span style="color:#15803d; font-weight:700;">PAID</span>
+                                <strong>Status:</strong> <span id="inv-status" style="color:#15803d; font-weight:700;">PAID</span>
                             </p>
                         </div>
                     </div>
@@ -1014,6 +1014,15 @@
             document.getElementById('inv-id').innerText = order.invoiceId || 'N/A';
             document.getElementById('inv-date').innerText = new Date(order.createdAt).toLocaleDateString();
             document.getElementById('inv-pay-id').innerText = order.paymentId;
+            
+            const invStatus = document.getElementById('inv-status');
+            if (order.status === 'Cancelled') {
+                invStatus.innerText = 'REFUND COMPLETED & CANCELLED';
+                invStatus.style.color = '#ef4444';
+            } else {
+                invStatus.innerText = 'PAID';
+                invStatus.style.color = '#15803d';
+            }
             
             const addr = order.address;
             document.getElementById('inv-bill-to').innerHTML = `
