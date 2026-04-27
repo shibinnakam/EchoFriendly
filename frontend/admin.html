@@ -512,10 +512,11 @@
                             </td>
                             <td><span style="font-weight:800; color:#3e684a;">₹${o.amount}</span></td>
                             <td>
-                                <select onchange="updateOrderStatus('${o.orderId}', this.value)" style="padding:4px 8px; border-radius:6px; font-size:0.8rem; font-weight:700; border:1px solid #edf2f0; outline:none; cursor:pointer; background:#f8faf9; color:#1a2e26;">
+                                <select onchange="updateOrderStatus('${o.orderId}', this.value)" style="padding:4px 8px; border-radius:6px; font-size:0.8rem; font-weight:700; border:1px solid #edf2f0; outline:none; cursor:pointer; background:${o.status === 'Cancelled' ? '#fee2e2' : '#f8faf9'}; color:${o.status === 'Cancelled' ? '#ef4444' : '#1a2e26'};">
                                     <option value="Ordered" ${(!o.status || o.status==='Ordered') ? 'selected' : ''}>Ordered</option>
                                     <option value="Shipped" ${o.status==='Shipped' ? 'selected' : ''}>Shipped</option>
                                     <option value="Delivered" ${o.status==='Delivered' ? 'selected' : ''}>Delivered</option>
+                                    <option value="Cancelled" ${o.status==='Cancelled' ? 'selected' : ''}>Cancelled</option>
                                 </select>
                             </td>
                             <td>
