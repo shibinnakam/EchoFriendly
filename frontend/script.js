@@ -824,12 +824,14 @@ window.switchAuthTab = function(tabName) {
     document.getElementById('auth-login-step').style.display = 'none';
     document.getElementById('auth-signup-step').style.display = 'none';
     document.getElementById('auth-otp-step').style.display = 'none';
+    document.getElementById('auth-forgot-step').style.display = 'none';
+    document.getElementById('auth-reset-step').style.display = 'none';
     
     // Reset tabs
     document.getElementById('tab-btn-login').classList.remove('active');
     document.getElementById('tab-btn-signup').classList.remove('active');
 
-    // Show tabs bar in case it was hidden by OTP step
+    // Show tabs bar in case it was hidden by OTP or Forgot step
     document.getElementById('auth-tabs').style.display = 'flex';
     document.getElementById('auth-modal-header').style.display = 'block';
 
@@ -839,6 +841,15 @@ window.switchAuthTab = function(tabName) {
     } else if (tabName === 'signup') {
         document.getElementById('tab-btn-signup').classList.add('active');
         document.getElementById('auth-signup-step').style.display = 'block';
+    } else if (tabName === 'forgot') {
+        // Hide tabs for forgot step
+        document.getElementById('auth-tabs').style.display = 'none';
+        document.getElementById('auth-forgot-step').style.display = 'block';
+    } else if (tabName === 'reset') {
+        // Hide tabs for reset step
+        document.getElementById('auth-tabs').style.display = 'none';
+        document.getElementById('auth-modal-header').style.display = 'none';
+        document.getElementById('auth-reset-step').style.display = 'block';
     }
 };
 
@@ -967,6 +978,98 @@ window.submitLogin = function() {
             errorEl.textContent = err.message || JSON.stringify(err);
             errorEl.style.display = 'block';
         },
+    });
+};
+
+let currentForgotEmail = '';
+
+window.submitForgotPassword = function() {
+    const email = document.getElementById('forgot-email').value;
+    const errorEl = document.getElementById('forgot-error');
+
+    errorEl.style.display = 'none';
+
+    if (!email) {
+        errorEl.textContent = 'Please enter your corporate email.';
+        errorEl.style.display = 'block';
+        return;
+    }
+
+    if (!userPool) {
+        errorEl.textContent = 'Amazon Cognito SDK not loaded or poorly configured.';
+        errorEl.style.display = 'block';
+        return;
+    }
+
+    const userData = { Username: email, Pool: userPool };
+    const cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);
+
+    cognitoUser.forgotPassword({
+        onSuccess: function (data) {
+            // Did not return data, but succeeded
+        },
+        onFailure: function(err) {
+            errorEl.textContent = err.message || JSON.stringify(err);
+            errorEl.style.display = 'block';
+        },
+        inputVerificationCode: function(data) {
+            // OTP sent, move to reset step
+            currentForgotEmail = email;
+            document.getElementById('reset-email-display').textContent = email;
+            switchAuthTab('reset');
+        }
+    });
+};
+
+window.submitResetPassword = function() {
+    const otp = document.getElementById('reset-otp').value;
+    const newPassword = document.getElementById('reset-new-password').value;
+    const confirmPassword = document.getElementById('reset-confirm-password').value;
+    const errorEl = document.getElementById('reset-error');
+    const successEl = document.getElementById('reset-success');
+
+    errorEl.style.display = 'none';
+
+    if (!otp || !newPassword || !confirmPassword) {
+        errorEl.textContent = 'Please fill in all fields.';
+        errorEl.style.display = 'block';
+        return;
+    }
+
+    if (newPassword !== confirmPassword) {
+        errorEl.textContent = 'Passwords do not match.';
+        errorEl.style.display = 'block';
+        return;
+    }
+
+    // Password strength validation
+    const minLength = 8;
+    const hasUpperCase = /[A-Z]/.test(newPassword);
+    const hasLowerCase = /[a-z]/.test(newPassword);
+    const hasNumbers = /\d/.test(newPassword);
+    const hasNonalphas = /\W/.test(newPassword);
+
+    if (newPassword.length < minLength || !hasUpperCase || !hasLowerCase || !hasNumbers || !hasNonalphas) {
+        errorEl.textContent = 'Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number, and one special character.';
+        errorEl.style.display = 'block';
+        return;
+    }
+
+    const userData = { Username: currentForgotEmail, Pool: userPool };
+    const cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);
+
+    cognitoUser.confirmPassword(otp, newPassword, {
+        onSuccess: function() {
+            successEl.style.display = 'block';
+            setTimeout(() => {
+                successEl.style.display = 'none';
+                switchAuthTab('login');
+            }, 2000);
+        },
+        onFailure: function(err) {
+            errorEl.textContent = err.message || JSON.stringify(err);
+            errorEl.style.display = 'block';
+        }
     });
 };
 

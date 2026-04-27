@@ -73,7 +73,7 @@ exports.handler = async (event) => {
                         orderId: razorpay_order_id,
                         paymentId: razorpay_payment_id,
                         invoiceId: invoiceId,
-                        status: 'paid',
+                        status: 'Ordered',
                         amount: orderDetails.totalAmount,
                         items: orderDetails.items,
                         address: orderDetails.address,
@@ -140,7 +140,37 @@ exports.handler = async (event) => {
             return { statusCode: 200, body: 'OK' };
         }
 
-        // --- 4. LIST ALL ORDERS (ADMIN ONLY) ---
+        // --- 4. UPDATE ORDER STATUS (ADMIN ONLY) ---
+        if (routeKey === 'PUT /orders/status') {
+            const claims = requestContext.authorizer?.jwt?.claims;
+            if (!claims || claims.email !== ADMIN_EMAIL) {
+                return {
+                    statusCode: 403,
+                    headers: { 'Access-Control-Allow-Origin': '*' },
+                    body: JSON.stringify({ message: 'Forbidden' }),
+                };
+            }
+            
+            const { orderId, status } = data;
+            await ddbDocClient.send(new UpdateCommand({
+                TableName: process.env.ORDERS_TABLE,
+                Key: { orderId: orderId },
+                UpdateExpression: 'SET #s = :status',
+                ExpressionAttributeNames: { '#s': 'status' },
+                ExpressionAttributeValues: { ':status': status }
+            }));
+            
+            return {
+                statusCode: 200,
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*' 
+                },
+                body: JSON.stringify({ message: 'Status updated successfully' }),
+            };
+        }
+
+        // --- 5. LIST ALL ORDERS (ADMIN ONLY) ---
         if (routeKey === 'GET /orders/list') {
             // --- SECURITY: ADMIN CHECK ---
             const claims = requestContext.authorizer?.jwt?.claims;
