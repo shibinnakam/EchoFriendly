@@ -258,28 +258,34 @@ exports.handler = async (event) => {
             }
             
             // Process Razorpay Refund
+            let refundId = null;
             try {
                 if (order.paymentId) {
-                    await razorpay.payments.refund(order.paymentId, {
+                    const refund = await razorpay.payments.refund(order.paymentId, {
                         speed: "optimum"
                     });
+                    refundId = refund.id; // e.g. "rfnd_XXXXXXXXXXXX"
                 }
             } catch (refundErr) {
                 console.error("Razorpay refund error:", refundErr);
-                // Handle already refunded or other errors gracefully if possible, but for strictness, block cancellation if refund fails.
                 return {
                     statusCode: 500,
                     headers: { 'Access-Control-Allow-Origin': '*' },
-                    body: JSON.stringify({ message: 'Cancellation failed. Unable to process refund automatically.' })
+                    body: JSON.stringify({ message: 'Cancellation failed. Unable to process refund automatically. Please contact support.' })
                 };
             }
             
+            // Mark order as Cancelled, storing refundId as proof
             await ddbDocClient.send(new UpdateCommand({
                 TableName: process.env.ORDERS_TABLE,
                 Key: { orderId: orderId },
-                UpdateExpression: 'SET #s = :status',
+                UpdateExpression: 'SET #s = :status, refundId = :refundId, refundedAt = :refundedAt',
                 ExpressionAttributeNames: { '#s': 'status' },
-                ExpressionAttributeValues: { ':status': 'Cancelled' }
+                ExpressionAttributeValues: { 
+                    ':status': 'Cancelled',
+                    ':refundId': refundId,
+                    ':refundedAt': new Date().toISOString()
+                }
             }));
             
             // Re-increment stock

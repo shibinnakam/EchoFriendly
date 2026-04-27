@@ -152,6 +152,20 @@ exports.handler = async (event) => {
             }
             
             const { orderId, status } = data;
+            
+            const resOrder = await ddbDocClient.send(new GetCommand({
+                TableName: process.env.ORDERS_TABLE,
+                Key: { orderId: orderId }
+            }));
+            
+            if (resOrder.Item && resOrder.Item.status === 'Cancelled') {
+                return {
+                    statusCode: 400,
+                    headers: { 'Access-Control-Allow-Origin': '*' },
+                    body: JSON.stringify({ message: 'Cannot change status of a cancelled order' }),
+                };
+            }
+
             await ddbDocClient.send(new UpdateCommand({
                 TableName: process.env.ORDERS_TABLE,
                 Key: { orderId: orderId },
@@ -241,6 +255,23 @@ exports.handler = async (event) => {
             
             if (order.status === 'Delivered' || order.status === 'Cancelled') {
                 return { statusCode: 400, headers: { 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify({ message: `Cannot cancel an order with status: ${order.status}` }) };
+            }
+            
+            // Process Razorpay Refund
+            try {
+                if (order.paymentId) {
+                    await razorpay.payments.refund(order.paymentId, {
+                        speed: "optimum"
+                    });
+                }
+            } catch (refundErr) {
+                console.error("Razorpay refund error:", refundErr);
+                // Handle already refunded or other errors gracefully if possible, but for strictness, block cancellation if refund fails.
+                return {
+                    statusCode: 500,
+                    headers: { 'Access-Control-Allow-Origin': '*' },
+                    body: JSON.stringify({ message: 'Cancellation failed. Unable to process refund automatically.' })
+                };
             }
             
             await ddbDocClient.send(new UpdateCommand({

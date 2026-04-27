@@ -565,8 +565,11 @@
 
             const admStatus = document.getElementById('adm-inv-status');
             if (order.status === 'Cancelled') {
-                admStatus.innerText = 'REFUND COMPLETED & CANCELLED';
-                admStatus.style.color = '#ef4444';
+                if (order.refundId) {
+                    admStatus.innerHTML = `<span style="color:#ef4444;">REFUND COMPLETED & CANCELLED</span><br><span style="font-size:0.7rem; color:#64748b;">Refund ID: ${order.refundId}</span>`;
+                } else {
+                    admStatus.innerHTML = `<span style="color:#f59e0b;">CANCELLED — REFUND PENDING</span>`;
+                }
             } else {
                 admStatus.innerText = 'PAID';
                 admStatus.style.color = '#15803d';
