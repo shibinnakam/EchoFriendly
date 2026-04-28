@@ -260,6 +260,16 @@
         .input-error { border-color: #ef4444 !important; background-color: #fff5f5 !important; }
         .input-valid { border-color: #3e684a !important; }
 
+        @media print {
+            body * { display: none !important; }
+            #invoice-modal, #invoice-modal * { display: block !important; }
+            #invoice-printable, #invoice-printable * { display: block !important; }
+            .sidebar, .hero-banner, .auth-preloader, .modal-overlay .close-modal, .btn-plus, .nav-links, .echo-modal { display: none !important; }
+            #invoice-modal { position: static !important; background: white !important; padding: 0 !important; margin: 0 !important; width: 100% !important; }
+            #invoice-printable { position: static !important; width: 100% !important; padding: 0 !important; border: none !important; }
+            @page { margin: 0; }
+            body { margin: 1cm; }
+        }
     </style>
 </head>
 <body>
