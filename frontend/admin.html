@@ -232,6 +232,10 @@
         .card-actions .delete-btn { color: #ef4444; }
         .card-actions button:hover { background: #f8faf9; border-color: #cbd5e1; }
 
+        .error-hint { font-size: 0.7rem; color: #ef4444; font-weight: 600; margin-top: 4px; display: none; }
+        .input-error { border-color: #ef4444 !important; background-color: #fff5f5 !important; }
+        .input-valid { border-color: #3e684a !important; }
+
     </style>
 </head>
 <body>
@@ -332,7 +336,11 @@
                 
                 <div class="form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
                     <div class="form-section-head">Basic Identity</div>
-                    <div class="full" style="grid-column: span 2;"><label>Product Name</label><input type="text" id="prod-name" placeholder="e.g. Malanadu Wild Honey" oninput="document.getElementById('prod-slug').value = this.value.toLowerCase().replace(/ /g,'-').replace(/[^\w-]+/g,'')"></div>
+                    <div class="full" style="grid-column: span 2;">
+                        <label>Product Name</label>
+                        <input type="text" id="prod-name" placeholder="e.g. Malanadu Wild Honey" oninput="checkNameUniqueness(this.value); updateSlug(this.value)">
+                        <span id="name-error" class="error-hint">This product name already exists.</span>
+                    </div>
                     <div><label>Slug (URL Handle)</label><input type="text" id="prod-slug" readonly style="background:#f8faf9; color: #64748b;"></div>
                     <div><label>Brand Name</label><input type="text" id="prod-brand" placeholder="e.g. Malanadu"></div>
                     <div><label>SKU (Stock Keeping Unit)</label><input type="text" id="prod-sku" placeholder="MH-2024-X"></div>
@@ -359,7 +367,11 @@
                     </div>
 
                     <div class="form-section-head">Detailed Spec</div>
-                    <div class="full"><label>Description</label><textarea id="prod-desc" rows="3"></textarea></div>
+                    <div class="full">
+                        <label>Description (15-30 chars, starts with letter)</label>
+                        <textarea id="prod-desc" rows="3" oninput="validateDescription(this.value)"></textarea>
+                        <span id="desc-error" class="error-hint">Must be 15-30 chars and start with a letter.</span>
+                    </div>
                     <div class="full"><label>Ingredients (comma separated)</label><textarea id="prod-ingredients" rows="2" placeholder="Honey, Water, etc..."></textarea></div>
                     
                     <div class="form-grid-3">
@@ -687,6 +699,9 @@
                 document.body.style.overflow = 'hidden';
                 if (id === 'prod-form-box' && !document.getElementById('edit-prod-id').value) {
                     document.getElementById('btn-save-prod').innerText = 'Add Product to Ecosystem';
+                    // Reset validation states
+                    document.querySelectorAll('.error-hint').forEach(e => e.style.display = 'none');
+                    document.querySelectorAll('.input-error, .input-valid').forEach(i => i.classList.remove('input-error', 'input-valid'));
                 }
             }
         }
@@ -1110,6 +1125,10 @@
             }
             
             document.getElementById('btn-save-prod').innerText = 'Update Product Details';
+            // Clear validation states on edit load
+            document.querySelectorAll('.error-hint').forEach(e => e.style.display = 'none');
+            document.querySelectorAll('.input-error, .input-valid').forEach(i => i.classList.remove('input-error', 'input-valid'));
+            
             window.scrollTo(0,0);
         }
 
@@ -1235,6 +1254,55 @@
             const user = userPool.getCurrentUser();
             if (user) user.signOut();
             window.location.href = 'index.html';
+        }
+
+        function updateSlug(val) {
+            document.getElementById('prod-slug').value = val.toLowerCase().replace(/ /g,'-').replace(/[^\w-]+/g,'');
+        }
+
+        function checkNameUniqueness(name) {
+            const input = document.getElementById('prod-name');
+            const error = document.getElementById('name-error');
+            const editId = document.getElementById('edit-prod-id').value;
+            
+            if (!name.trim()) {
+                input.classList.remove('input-error', 'input-valid');
+                error.style.display = 'none';
+                return;
+            }
+
+            const exists = allProducts.some(p => p.productName.toLowerCase() === name.trim().toLowerCase() && p.productId !== editId);
+            if (exists) {
+                input.classList.add('input-error');
+                input.classList.remove('input-valid');
+                error.style.display = 'block';
+            } else {
+                input.classList.remove('input-error');
+                input.classList.add('input-valid');
+                error.style.display = 'none';
+            }
+        }
+
+        function validateDescription(desc) {
+            const input = document.getElementById('prod-desc');
+            const error = document.getElementById('desc-error');
+            const descRegex = /^[A-Za-z][A-Za-z0-9\s.,!?-]{14,29}$/;
+            
+            if (!desc.trim()) {
+                input.classList.remove('input-error', 'input-valid');
+                error.style.display = 'none';
+                return;
+            }
+
+            if (!descRegex.test(desc.trim())) {
+                input.classList.add('input-error');
+                input.classList.remove('input-valid');
+                error.style.display = 'block';
+            } else {
+                input.classList.remove('input-error');
+                input.classList.add('input-valid');
+                error.style.display = 'none';
+            }
         }
 
         window.onload = () => {
