@@ -177,8 +177,8 @@
         .form-section-head { grid-column: span 2; font-size: 0.75rem; font-weight: 800; color: #3e684a; margin-top: 2rem; border-bottom: 1px solid #f1f5f3; padding-bottom: 10px; text-transform: uppercase; letter-spacing: 1.5px; display: flex; align-items: center; gap: 10px; }
         .form-section-head::before { content: ''; width: 4px; height: 16px; background: #3e684a; border-radius: 4px; }
         .form-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.2rem; grid-column: span 2; }
-        .variant-header { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr 45px; gap: 15px; padding: 0 15px 8px; font-size: 0.7rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #f1f5f3; margin-bottom: 10px; }
-        .variant-row { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr 45px; gap: 15px; padding: 12px 15px; background: #f8faf9; border-radius: 16px; margin-bottom: 8px; align-items: center; border: 1px solid #edf2f0; transition: var(--transition); }
+        .variant-header { display: grid; grid-template-columns: 1.2fr 1fr 1fr 1fr 1fr 1fr 45px; gap: 12px; padding: 0 15px 8px; font-size: 0.65rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #f1f5f3; margin-bottom: 10px; }
+        .variant-row { display: grid; grid-template-columns: 1.2fr 1fr 1fr 1fr 1fr 1fr 45px; gap: 12px; padding: 10px 15px; background: #f8faf9; border-radius: 16px; margin-bottom: 8px; align-items: center; border: 1px solid #edf2f0; transition: var(--transition); }
         .variant-row:hover { background: #f1f8f3; border-color: #3e684a; transform: translateX(4px); }
         .variant-row .v-input-group { position: relative; width: 100%; }
         .variant-row input, .variant-row select { padding: 10px 14px; font-size: 0.9rem; border-radius: 10px; background: white; border: 1.5px solid #e8eeeb; }
@@ -338,19 +338,6 @@
                     <div><label>SKU (Stock Keeping Unit)</label><input type="text" id="prod-sku" placeholder="MH-2024-X"></div>
                     <div><label>Category</label><select id="prod-cat-select"></select></div>
 
-                    <div class="form-section-head">Pricing Details</div>
-                    <div class="form-grid-3">
-                        <div style="grid-column: span 1;"><label>MRP (₹)</label><input type="number" id="prod-mrp" placeholder="0.00"></div>
-                        <div style="grid-column: span 1;"><label>Selling Price (₹)</label><input type="number" id="prod-price" placeholder="0.00"></div>
-                        <div style="grid-column: span 1;"><label>Offer Price (₹)</label><input type="number" id="prod-offer-price" placeholder="Optional"></div>
-                    </div>
-
-                    <div class="form-section-head">Stock & Unit</div>
-                    <div class="form-grid-3">
-                        <div><label>Current Stock</label><input type="number" id="prod-stock" placeholder="0"></div>
-                        <div><label>Low Stock Warning</label><input type="number" id="prod-low-stock" value="5"></div>
-                        <div><label>Unit Label</label><input type="text" id="prod-unit" placeholder="e.g. 500g, 1L"></div>
-                    </div>
 
                     <div class="form-section-head">Manufacturing & Validity</div>
                     <div class="form-grid-3">
@@ -375,7 +362,9 @@
                         <div class="variant-header">
                             <div>Size / Vol</div>
                             <div>Unit</div>
-                            <div>Price (₹)</div>
+                            <div>MRP (₹)</div>
+                            <div>Selling (₹)</div>
+                            <div>Offer (₹)</div>
                             <div>Stock</div>
                             <div></div>
                         </div>
@@ -383,13 +372,12 @@
                         <button class="btn-mini" onclick="addVariantRow()" style="margin-top:15px; width: 100%; font-weight: 700; background: #f1f8f3; color: #3e684a; border: 2px dashed #3e684a; border-radius: 12px; padding: 12px;"><i class="fa-solid fa-plus"></i> Add Another Variant</button>
                     </div>
 
-                    <div class="form-section-head">Settings & Status</div>
+                    <div class="form-section-head" style="margin-top: 2rem;">Stock & Settings</div>
                     <div class="form-grid-3">
-                        <div class="switch-wrap"><label class="switch"><input type="checkbox" id="prod-featured"><span class="slider"></span></label> <span>Featured</span></div>
-                        <div class="switch-wrap"><label class="switch"><input type="checkbox" id="prod-is-offer"><span class="slider"></span></label> <span>Offer Product</span></div>
-                        <div class="switch-wrap"><label class="switch"><input type="checkbox" id="prod-is-hidden"><span class="slider"></span></label> <span>Hidden</span></div>
+                        <div><label>Low Stock Warning</label><input type="number" id="prod-low-stock" value="5"></div>
+                        <div><label>Unit Label (Default)</label><input type="text" id="prod-unit" placeholder="e.g. 500g, 1L"></div>
+                        <div><label>Status</label><select id="prod-status"><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
                     </div>
-                    <div><label>Status</label><select id="prod-status"><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
 
                     <div class="full"><label>Images (Select Multiple)</label><input type="file" id="prod-image-files" multiple accept="image/*"></div>
                     <input type="hidden" id="edit-prod-id">
@@ -896,7 +884,9 @@
                         <option value="pcs">Piece (pcs)</option>
                     </select>
                 </div>
-                <div class="v-input-group"><input type="number" class="v-price" placeholder="0"></div>
+                <div class="v-input-group"><input type="number" class="v-mrp" placeholder="MRP"></div>
+                <div class="v-input-group"><input type="number" class="v-price" placeholder="Sell"></div>
+                <div class="v-input-group"><input type="number" class="v-offer" placeholder="Offer"></div>
                 <div class="v-input-group"><input type="number" class="v-stock" placeholder="0"></div>
                 <button class="btn-mini red" onclick="this.parentElement.remove()" title="Remove Variant"><i class="fa-solid fa-trash-can"></i></button>
             `;
@@ -932,7 +922,9 @@
                 if (sizeVal) {
                     variantValues.push({
                         size: sizeVal + unitVal,
+                        mrp: parseFloat(row.querySelector('.v-mrp').value) || 0,
                         price: parseFloat(row.querySelector('.v-price').value) || 0,
+                        offerPrice: parseFloat(row.querySelector('.v-offer').value) || 0,
                         stock: parseInt(row.querySelector('.v-stock').value) || 0
                     });
                 }
@@ -947,11 +939,11 @@
                 sku: document.getElementById('prod-sku').value,
                 categoryId: document.getElementById('prod-cat-select').value,
                 
-                mrp: parseFloat(document.getElementById('prod-mrp').value) || 0,
-                price: parseFloat(document.getElementById('prod-price').value) || 0,
-                offerPrice: parseFloat(document.getElementById('prod-offer-price').value) || 0,
+                mrp: variantValues[0]?.mrp || 0,
+                price: variantValues[0]?.price || 0,
+                offerPrice: variantValues[0]?.offerPrice || 0,
                 
-                stock: parseInt(document.getElementById('prod-stock').value) || 0,
+                stock: variantValues.reduce((sum, v) => sum + v.stock, 0),
                 lowStockThreshold: parseInt(document.getElementById('prod-low-stock').value) || 5,
                 unit: document.getElementById('prod-unit').value,
                 
@@ -1047,8 +1039,10 @@
                                 <option value="pcs" ${unitPart==='pcs'?'selected':''}>Piece (pcs)</option>
                             </select>
                         </div>
-                        <div class="v-input-group"><input type="number" class="v-price" value="${v.price}"></div>
-                        <div class="v-input-group"><input type="number" class="v-stock" value="${v.stock}"></div>
+                        <div class="v-input-group"><input type="number" class="v-mrp" value="${v.mrp || ''}" placeholder="MRP"></div>
+                        <div class="v-input-group"><input type="number" class="v-price" value="${v.price || ''}" placeholder="Sell"></div>
+                        <div class="v-input-group"><input type="number" class="v-offer" value="${v.offerPrice || ''}" placeholder="Offer"></div>
+                        <div class="v-input-group"><input type="number" class="v-stock" value="${v.stock || 0}"></div>
                         <button class="btn-mini red" onclick="this.parentElement.remove()" title="Remove Variant"><i class="fa-solid fa-trash-can"></i></button>
                     `;
                     vRows.appendChild(row);
