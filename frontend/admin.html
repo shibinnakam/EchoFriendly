@@ -966,6 +966,8 @@
 
             await fetch(`${API_URL}inventory/categories`, { method: 'POST', body: JSON.stringify(payload), headers: h });
             showAlert('Category saved successfully.');
+            toggleForm('cat-form-box'); // Auto-close form
+            loadCategories(); // Refresh list
             switchTab('cats');
         }
 
@@ -1125,7 +1127,7 @@
             // Reset form
             document.getElementById('edit-prod-id').value = '';
             document.getElementById('btn-save-prod').innerText = 'Add Product to Ecosystem';
-            toggleForm('prod-form-box');
+            closeAllModals(); // Auto-close form and backdrop
             loadProducts();
         }
 
