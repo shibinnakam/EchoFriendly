@@ -377,6 +377,9 @@
                         <div><label>Low Stock Warning</label><input type="number" id="prod-low-stock" value="5"></div>
                         <div><label>Unit Label (Default)</label><input type="text" id="prod-unit" placeholder="e.g. 500g, 1L"></div>
                         <div><label>Status</label><select id="prod-status"><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
+                        <div class="switch-wrap"><label class="switch"><input type="checkbox" id="prod-featured"><span class="slider"></span></label> <span>Featured</span></div>
+                        <div class="switch-wrap"><label class="switch"><input type="checkbox" id="prod-is-offer"><span class="slider"></span></label> <span>Offer Product</span></div>
+                        <div class="switch-wrap"><label class="switch"><input type="checkbox" id="prod-is-hidden"><span class="slider"></span></label> <span>Hidden</span></div>
                     </div>
 
                     <div class="full"><label>Images (Select Multiple)</label><input type="file" id="prod-image-files" multiple accept="image/*"></div>
@@ -993,11 +996,6 @@
             document.getElementById('prod-sku').value = p.sku || '';
             document.getElementById('prod-cat-select').value = p.categoryId || '';
             
-            document.getElementById('prod-mrp').value = p.mrp || '';
-            document.getElementById('prod-price').value = p.price || '';
-            document.getElementById('prod-offer-price').value = p.offerPrice || '';
-            
-            document.getElementById('prod-stock').value = p.stock || '';
             document.getElementById('prod-low-stock').value = p.lowStockThreshold || 5;
             document.getElementById('prod-unit').value = p.unit || '';
             
