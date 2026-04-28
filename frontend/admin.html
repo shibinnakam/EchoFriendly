@@ -232,6 +232,15 @@
         .card-actions .delete-btn { color: #ef4444; }
         .card-actions button:hover { background: #f8faf9; border-color: #cbd5e1; }
 
+        .sales-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        .sales-table th { background: #f8faf9; padding: 12px 15px; text-align: left; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; border-bottom: 1px solid #e2e8f0; font-weight: 800; }
+        .sales-table td { padding: 12px 15px; border-bottom: 1px solid #f1f5f3; font-size: 0.85rem; color: #1a2e26; vertical-align: middle; }
+        .sales-table tr:hover { background: #f8faf9; }
+        .sales-rank { width: 28px; height: 28px; background: #3e684a; color: #fff; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800; }
+        .sales-img { width: 45px; height: 45px; border-radius: 10px; object-fit: cover; background: #fff; border: 1px solid #edf2f0; }
+        .sales-qty { background: #dcfce7; color: #15803d; padding: 4px 10px; border-radius: 20px; font-weight: 700; font-size: 0.8rem; }
+        .sales-rev { font-weight: 800; color: #3e684a; }
+
         .error-hint { font-size: 0.7rem; color: #ef4444; font-weight: 600; margin-top: 4px; display: none; }
         .input-error { border-color: #ef4444 !important; background-color: #fff5f5 !important; }
         .input-valid { border-color: #3e684a !important; }
@@ -285,8 +294,21 @@
                     <h2 style="font-family:'Cormorant Garamond',serif; font-size:1.8rem; color:#1a2e26;"><i class="fa-solid fa-trophy" style="color:#f59e0b; font-size:1.2rem;"></i> Top 5 Selling Products</h2>
                     <span style="font-size:0.75rem; color:#64748b; font-weight:700; letter-spacing:1px;">BASED ON ALL ORDERS</span>
                 </div>
-                <div id="top-products-grid" style="display:grid; grid-template-columns:repeat(5,1fr); gap:1rem;">
-                    <div style="text-align:center; padding:2rem; color:#94a3b8;"><i class="fa-solid fa-spinner fa-spin"></i><p style="margin-top:8px; font-size:0.8rem;">Loading...</p></div>
+                <div id="top-products-container" style="overflow-x:auto;">
+                    <table class="sales-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 60px;">Rank</th>
+                                <th style="width: 80px;">Image</th>
+                                <th>Product Details</th>
+                                <th style="text-align: center;">Sales Qty</th>
+                                <th style="text-align: right;">Total Revenue</th>
+                            </tr>
+                        </thead>
+                        <tbody id="top-products-body">
+                            <tr><td colspan="5" style="text-align:center; padding:2rem; color:#94a3b8;"><i class="fa-solid fa-spinner fa-spin"></i><p style="margin-top:8px; font-size:0.8rem;">Loading analytics...</p></td></tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -300,7 +322,11 @@
 
             <div id="cat-form-box" class="form-box">
                 <div class="form-grid">
-                    <div class="full"><label>Category Name</label><input type="text" id="cat-name" placeholder="e.g. Organic Snacks"></div>
+                    <div style="margin-bottom:15px;">
+                        <label>Category Name</label>
+                        <input type="text" id="cat-name" placeholder="e.g. Organic Honey" oninput="checkCategoryUniqueness(this.value)">
+                        <span id="cat-name-error" class="error-hint">This category name already exists.</span>
+                    </div>
                     <div class="full"><label>Category Image/Icon</label><input type="file" id="cat-image-file" accept="image/*"></div>
                     <div class="full" style="text-align: right; margin-top: 1rem;">
                         <input type="hidden" id="edit-cat-id">
@@ -877,19 +903,41 @@
         }
 
         async function saveCategory() {
-            const h = await getAuthHeaders();
+            const name = document.getElementById('cat-name').value.trim();
+            const editId = document.getElementById('edit-cat-id').value;
             const file = document.getElementById('cat-image-file').files[0];
+            
+            // 1. Uniqueness Check
+            const exists = allCats.some(c => c.categoryName.toLowerCase() === name.toLowerCase() && c.categoryId !== editId);
+            if (exists) return alert('Category with this name already exists!');
+
+            // 2. Mandatory Checks
+            if (!name) return alert('Category name is mandatory!');
+            
+            const h = await getAuthHeaders();
             let imageUrl = null;
+            
             if (file) {
                  const res = await fetch(`${API_URL}inventory/presigned-url`, { method: 'POST', body: JSON.stringify({ fileName: file.name, fileType: file.type }), headers: h });
                  const { uploadUrl, fileUrl } = await res.json();
                  await fetch(uploadUrl, { method: 'PUT', body: file, headers: { 'Content-Type': file.type } });
                  imageUrl = fileUrl;
+            } else if (!editId) {
+                // If creating new category, image is mandatory
+                return alert('Category image is mandatory for new categories!');
             }
-            const catId = document.getElementById('edit-cat-id').value || 'CAT' + Date.now();
-            const payload = { categoryId: catId, categoryName: document.getElementById('cat-name').value };
+
+            const catId = editId || 'CAT' + Date.now();
+            const payload = { categoryId: catId, categoryName: name };
             if (imageUrl) payload.categoryImage = imageUrl;
+            // Maintain old image if not updated during edit
+            if (!imageUrl && editId) {
+                const old = allCats.find(c => c.categoryId === editId);
+                if (old) payload.categoryImage = old.categoryImage;
+            }
             
+            if (!payload.categoryImage) return alert('Category image is mandatory!');
+
             await fetch(`${API_URL}inventory/categories`, { method: 'POST', body: JSON.stringify(payload), headers: h });
             alert('Category saved successfully.');
             switchTab('cats');
@@ -1156,10 +1204,9 @@
         }
 
         function renderTopProducts(orders, products) {
-            const grid = document.getElementById('top-products-grid');
-            if (!grid) return;
+            const tbody = document.getElementById('top-products-body');
+            if (!tbody) return;
 
-            // Aggregate quantities per productId across non-cancelled orders
             const salesMap = {};
             orders.filter(o => o.status !== 'Cancelled').forEach(order => {
                 (order.items || []).forEach(item => {
@@ -1173,30 +1220,25 @@
             const sorted = Object.entries(salesMap).sort((a,b) => b[1].qty - a[1].qty).slice(0, 5);
 
             if (sorted.length === 0) {
-                grid.innerHTML = '<div style="grid-column:span 5; text-align:center; color:#94a3b8; padding:2rem;">No sales data yet.</div>';
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#94a3b8; padding:3rem;">No sales data yet.</td></tr>';
                 return;
             }
 
             const medals = ['🥇','🥈','🥉','4️⃣','5️⃣'];
-            grid.style.gridTemplateColumns = `repeat(${sorted.length}, 1fr)`;
-            grid.innerHTML = sorted.map(([id, data], idx) => {
+            tbody.innerHTML = sorted.map(([id, data], idx) => {
                 const product = (products || allProducts).find(p => p.productId === id);
                 const img = product?.images?.[0] || 'https://via.placeholder.com/80?text=N/A';
-                const maxQty = sorted[0][1].qty;
-                const barPct = Math.round((data.qty / maxQty) * 100);
                 return `
-                    <div style="background:#f8faf9; border-radius:20px; padding:1.2rem; text-align:center; border:1px solid ${idx===0?'#f59e0b':'#edf2f0'}; position:relative; transition:0.3s;" onmouseover="this.style.transform='translateY(-4px)'" onmouseout="this.style.transform='none'">
-                        <div style="font-size:1.4rem; margin-bottom:6px;">${medals[idx]}</div>
-                        <div style="width:70px; height:70px; border-radius:50%; overflow:hidden; margin:0 auto 10px; background:white; border:2px solid ${idx===0?'#f59e0b':'#edf2f0'}; display:flex; align-items:center; justify-content:center;">
-                            <img src="${img}" style="width:90%; height:90%; object-fit:contain;">
-                        </div>
-                        <h4 style="font-size:0.8rem; font-weight:700; color:#1a2e26; margin-bottom:4px; line-height:1.3;">${data.name || product?.productName || 'Unknown'}</h4>
-                        <div style="background:#e2e8f0; border-radius:10px; height:6px; margin:8px 0; overflow:hidden;">
-                            <div style="background:${idx===0?'#f59e0b':'#3e684a'}; height:100%; width:${barPct}%; border-radius:10px; transition:width 0.8s;"></div>
-                        </div>
-                        <p style="font-size:0.75rem; color:#3e684a; font-weight:800;">${data.qty} units sold</p>
-                        <p style="font-size:0.7rem; color:#64748b;">&#8377;${Math.round(data.revenue).toLocaleString('en-IN')}</p>
-                    </div>
+                    <tr>
+                        <td><div class="sales-rank">${medals[idx]}</div></td>
+                        <td><img src="${img}" class="sales-img"></td>
+                        <td>
+                            <div style="font-weight:700; color:#1a2e26;">${data.name || product?.productName || 'Unknown'}</div>
+                            <div style="font-size:0.7rem; color:#64748b;">ID: ${id}</div>
+                        </td>
+                        <td style="text-align:center;"><span class="sales-qty">${data.qty} Units</span></td>
+                        <td style="text-align:right;"><span class="sales-rev">₹${Math.round(data.revenue).toLocaleString('en-IN')}</span></td>
+                    </tr>
                 `;
             }).join('');
         }
@@ -1272,6 +1314,29 @@
             }
 
             const exists = allProducts.some(p => p.productName.toLowerCase() === name.trim().toLowerCase() && p.productId !== editId);
+            if (exists) {
+                input.classList.add('input-error');
+                input.classList.remove('input-valid');
+                error.style.display = 'block';
+            } else {
+                input.classList.remove('input-error');
+                input.classList.add('input-valid');
+                error.style.display = 'none';
+            }
+        }
+
+        function checkCategoryUniqueness(name) {
+            const input = document.getElementById('cat-name');
+            const error = document.getElementById('cat-name-error');
+            const editId = document.getElementById('edit-cat-id').value;
+            
+            if (!name.trim()) {
+                input.classList.remove('input-error', 'input-valid');
+                error.style.display = 'none';
+                return;
+            }
+
+            const exists = allCats.some(c => c.categoryName.toLowerCase() === name.trim().toLowerCase() && c.categoryId !== editId);
             if (exists) {
                 input.classList.add('input-error');
                 input.classList.remove('input-valid');
