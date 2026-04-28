@@ -177,9 +177,15 @@
         .form-section-head { grid-column: span 2; font-size: 0.75rem; font-weight: 800; color: #3e684a; margin-top: 2rem; border-bottom: 1px solid #f1f5f3; padding-bottom: 10px; text-transform: uppercase; letter-spacing: 1.5px; display: flex; align-items: center; gap: 10px; }
         .form-section-head::before { content: ''; width: 4px; height: 16px; background: #3e684a; border-radius: 4px; }
         .form-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.2rem; grid-column: span 2; }
-        .variant-row { display: grid; grid-template-columns: 1.2fr 1fr 1fr 1fr 40px; gap: 12px; padding: 15px; background: white; border-radius: 15px; margin-bottom: 10px; align-items: flex-end; border: 1px solid #edf2f0; }
-        .btn-mini { padding: 8px 12px; font-size: 0.75rem; background: #3e684a; color: white; border-radius: 8px; cursor: pointer; border: none; }
-        .btn-mini.red { background: #ef4444; }
+        .variant-header { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr 45px; gap: 15px; padding: 0 15px 8px; font-size: 0.7rem; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #f1f5f3; margin-bottom: 10px; }
+        .variant-row { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr 45px; gap: 15px; padding: 12px 15px; background: #f8faf9; border-radius: 16px; margin-bottom: 8px; align-items: center; border: 1px solid #edf2f0; transition: var(--transition); }
+        .variant-row:hover { background: #f1f8f3; border-color: #3e684a; transform: translateX(4px); }
+        .variant-row .v-input-group { position: relative; width: 100%; }
+        .variant-row input, .variant-row select { padding: 10px 14px; font-size: 0.9rem; border-radius: 10px; background: white; border: 1.5px solid #e8eeeb; }
+        .variant-row input:focus, .variant-row select:focus { border-color: #3e684a; background: #ffffff; box-shadow: 0 4px 10px rgba(62, 104, 74, 0.05); }
+        .btn-mini { padding: 10px; font-size: 0.8rem; background: #3e684a; color: white; border-radius: 10px; cursor: pointer; border: none; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+        .btn-mini.red { background: #fee2e2; color: #ef4444; }
+        .btn-mini.red:hover { background: #ef4444; color: white; }
         
         /* Toggle Switch */
         .switch-wrap { display: flex; align-items: center; gap: 10px; padding: 10px 0; }
@@ -365,9 +371,16 @@
                     </div>
 
                     <div class="form-section-head">Product Variants</div>
-                    <div id="variant-container" class="variant-list">
+                    <div id="variant-container" class="variant-list" style="grid-column: span 2; background: #ffffff; padding: 20px; border-radius: 24px; border: 1px solid #f1f5f3; margin-top: 10px;">
+                        <div class="variant-header">
+                            <div>Size / Vol</div>
+                            <div>Unit</div>
+                            <div>Price (₹)</div>
+                            <div>Stock</div>
+                            <div></div>
+                        </div>
                         <div id="variant-rows"></div>
-                        <button class="btn-mini" onclick="addVariantRow()" style="margin-top:10px;"><i class="fa-solid fa-plus"></i> Add Variant Row</button>
+                        <button class="btn-mini" onclick="addVariantRow()" style="margin-top:15px; width: 100%; font-weight: 700; background: #f1f8f3; color: #3e684a; border: 2px dashed #3e684a; border-radius: 12px; padding: 12px;"><i class="fa-solid fa-plus"></i> Add Another Variant</button>
                     </div>
 
                     <div class="form-section-head">Settings & Status</div>
@@ -873,8 +886,8 @@
             div.className = 'variant-row';
             div.id = 'v-row-' + variantCounter;
             div.innerHTML = `
-                <div><label>Size/Vol</label><input type="text" class="v-size" placeholder="250"></div>
-                <div><label>Unit</label>
+                <div class="v-input-group"><input type="text" class="v-size" placeholder="e.g. 500"></div>
+                <div class="v-input-group">
                     <select class="v-unit">
                         <option value="g">Gram (g)</option>
                         <option value="kg">Kilogram (kg)</option>
@@ -883,9 +896,9 @@
                         <option value="pcs">Piece (pcs)</option>
                     </select>
                 </div>
-                <div><label>Price</label><input type="number" class="v-price"></div>
-                <div><label>Stock</label><input type="number" class="v-stock"></div>
-                <button class="btn-mini red" onclick="this.parentElement.remove()" style="margin-bottom:10px;">×</button>
+                <div class="v-input-group"><input type="number" class="v-price" placeholder="0"></div>
+                <div class="v-input-group"><input type="number" class="v-stock" placeholder="0"></div>
+                <button class="btn-mini red" onclick="this.parentElement.remove()" title="Remove Variant"><i class="fa-solid fa-trash-can"></i></button>
             `;
             document.getElementById('variant-rows').appendChild(div);
         }
@@ -1021,11 +1034,11 @@
                     variantCounter++;
                     const row = document.createElement('div');
                     row.className = 'variant-row';
-                    const numPart = parseFloat(v.size) || '';
-                    const unitPart = v.size.replace(/[0-9.]/g, '') || 'g';
+                    const numPart = parseFloat(v.size) || v.size;
+                    const unitPart = String(v.size).replace(/[0-9.]/g, '') || 'g';
                     row.innerHTML = `
-                        <div><label>Size/Vol</label><input type="text" class="v-size" value="${numPart}"></div>
-                        <div><label>Unit</label>
+                        <div class="v-input-group"><input type="text" class="v-size" value="${numPart}"></div>
+                        <div class="v-input-group">
                             <select class="v-unit">
                                 <option value="g" ${unitPart==='g'?'selected':''}>Gram (g)</option>
                                 <option value="kg" ${unitPart==='kg'?'selected':''}>Kilogram (kg)</option>
@@ -1034,9 +1047,9 @@
                                 <option value="pcs" ${unitPart==='pcs'?'selected':''}>Piece (pcs)</option>
                             </select>
                         </div>
-                        <div><label>Price</label><input type="number" class="v-price" value="${v.price}"></div>
-                        <div><label>Stock</label><input type="number" class="v-stock" value="${v.stock}"></div>
-                        <button class="btn-mini red" onclick="this.parentElement.remove()" style="margin-bottom:10px;">×</button>
+                        <div class="v-input-group"><input type="number" class="v-price" value="${v.price}"></div>
+                        <div class="v-input-group"><input type="number" class="v-stock" value="${v.stock}"></div>
+                        <button class="btn-mini red" onclick="this.parentElement.remove()" title="Remove Variant"><i class="fa-solid fa-trash-can"></i></button>
                     `;
                     vRows.appendChild(row);
                 });
