@@ -345,7 +345,18 @@
                         <div><label>Mfg Date</label><input type="date" id="prod-mfg"></div>
                         <div><label>Expiry Date</label><input type="date" id="prod-expiry"></div>
                     </div>
-                    <div class="full" style="grid-column: span 2;"><label>Total Shelf Life</label><input type="text" id="prod-shelf-life" placeholder="e.g. 24 Months from Mfg"></div>
+                    <div class="full" style="grid-column: span 2;">
+                        <label>Total Shelf Life (Mandatory)</label>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="number" id="prod-shelf-life-val" placeholder="Value" style="flex: 1.5;">
+                            <select id="prod-shelf-life-unit" style="flex: 1; padding-right: 35px;">
+                                <option value="Days">Days</option>
+                                <option value="Weeks">Weeks</option>
+                                <option value="Months" selected>Months</option>
+                                <option value="Years">Years</option>
+                            </select>
+                        </div>
+                    </div>
 
                     <div class="form-section-head">Detailed Spec</div>
                     <div class="full"><label>Description</label><textarea id="prod-desc" rows="3"></textarea></div>
@@ -934,13 +945,34 @@
             });
 
             const productId = editId || 'PROD' + Date.now();
+            const productName = document.getElementById('prod-name').value.trim();
+            const categoryId = document.getElementById('prod-cat-select').value;
+            const description = document.getElementById('prod-desc').value.trim();
+            const shelfLifeVal = document.getElementById('prod-shelf-life-val').value;
+            const shelfLifeUnit = document.getElementById('prod-shelf-life-unit').value;
+
+            // 1. Unique Product Name
+            const nameExists = allProducts.some(p => p.productName.toLowerCase() === productName.toLowerCase() && p.productId !== productId);
+            if (nameExists) return alert('A product with this name already exists! Please choose a unique name.');
+
+            // 2. Mandatory Fields
+            if (!productName || !categoryId) return alert('Product Name and Category are mandatory!');
+            if (!shelfLifeVal) return alert('Total Shelf Life is mandatory!');
+            
+            // 3. Description Validation (15-30 chars, starts with letter)
+            const descRegex = /^[A-Za-z][A-Za-z0-9\s.,!?-]{14,29}$/;
+            if (!descRegex.test(description)) {
+                return alert('Description must be 15-30 characters long and must start with a letter (Special characters allowed are . , ! ? -).');
+            }
+
+            const productIdFinal = productId;
             const payload = {
-                productId: productId,
-                productName: document.getElementById('prod-name').value,
+                productId: productIdFinal,
+                productName: productName,
                 slug: document.getElementById('prod-slug').value,
                 brand: document.getElementById('prod-brand').value,
                 sku: document.getElementById('prod-sku').value,
-                categoryId: document.getElementById('prod-cat-select').value,
+                categoryId: categoryId,
                 
                 mrp: variantValues[0]?.mrp || 0,
                 price: variantValues[0]?.price || 0,
@@ -953,7 +985,7 @@
                 batchNumber: document.getElementById('prod-batch').value,
                 manufactureDate: document.getElementById('prod-mfg').value,
                 expiryDate: document.getElementById('prod-expiry').value,
-                shelfLife: document.getElementById('prod-shelf-life').value,
+                shelfLife: `${shelfLifeVal} ${shelfLifeUnit}`,
                 
                 description: document.getElementById('prod-desc').value,
                 ingredients: document.getElementById('prod-ingredients').value.split(',').map(i => i.trim()).filter(i => i),
@@ -973,9 +1005,32 @@
                 
                 updatedAt: new Date().toISOString()
             };
+            // 4. Variant Validation (1-15, Unique)
+            if (variantValues.length === 0) return alert('At least one product variant is required!');
+            if (variantValues.length > 15) return alert('Maximum 15 variants allowed!');
+            
+            const variantSizes = new Set();
+            for (let v of variantValues) {
+                if (variantSizes.has(v.size.toLowerCase())) {
+                    return alert(`Duplicate variant detected: "${v.size}". Each variant must have a unique size/volume.`);
+                }
+                variantSizes.add(v.size.toLowerCase());
+            }
+
             if (!editId) payload.createdAt = new Date().toISOString().split('T')[0];
 
-            await fetch(`${API_URL}inventory/products`, { method: 'POST', body: JSON.stringify(payload), headers: h });
+            // Image validation happens after S3 upload
+            if (imageUrls.length === 0) {
+                return alert('At least one product image is required!');
+            }
+
+            console.log('Saving product payload:', payload);
+            const res = await fetch(`${API_URL}inventory/products`, { method: 'POST', body: JSON.stringify(payload), headers: h });
+            if (!res.ok) {
+                const errData = await res.json();
+                console.error('Save failed:', errData);
+                throw new Error(errData.message || 'Failed to save product');
+            }
             alert(editId ? 'Product updated successfully.' : 'Product added successfully.');
             
             // Reset form
@@ -1002,7 +1057,9 @@
             document.getElementById('prod-batch').value = p.batchNumber || '';
             document.getElementById('prod-mfg').value = p.manufactureDate || '';
             document.getElementById('prod-expiry').value = p.expiryDate || '';
-            document.getElementById('prod-shelf-life').value = p.shelfLife || '';
+            const shelfParts = (p.shelfLife || '').split(' ');
+            document.getElementById('prod-shelf-life-val').value = shelfParts[0] || '';
+            document.getElementById('prod-shelf-life-unit').value = shelfParts[1] || 'Months';
             
             document.getElementById('prod-desc').value = p.description || '';
             document.getElementById('prod-ingredients').value = (p.ingredients || []).join(', ');
