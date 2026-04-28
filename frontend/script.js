@@ -699,7 +699,7 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(siteUrl)}`;
             window.open(url, '_blank');
             // Inform user to paste caption manually if they are on Desktop
-            alert("LinkedIn Desktop doesn't support direct image upload via link. Please download the image and paste the caption manually.");
+            showEchoAlert("LinkedIn Desktop doesn't support direct image upload via link. Please download the image and paste the caption manually.");
         }
     };
 
@@ -817,6 +817,34 @@ window.closeAuthModal = function () {
 
 window.closeAuthModalOutside = function (e) {
     if (e.target.id === 'auth-modal-overlay') closeAuthModal();
+};
+
+/* --- CUSTOM ECHO ALERT LOGIC --- */
+window.showEchoAlert = function(msg, isError = false) {
+    const overlay = document.getElementById('echo-alert-overlay');
+    const msgEl   = document.getElementById('echo-alert-msg');
+    const iconEl  = document.getElementById('echo-alert-icon');
+    const titleEl = document.getElementById('echo-alert-title');
+
+    if (!overlay || !msgEl) return;
+
+    msgEl.textContent = msg;
+    titleEl.textContent = isError ? 'Error' : 'Success';
+    
+    if (isError) {
+        iconEl.classList.add('error');
+        iconEl.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i>';
+    } else {
+        iconEl.classList.remove('error');
+        iconEl.innerHTML = '<i class="fa-solid fa-circle-check"></i>';
+    }
+
+    overlay.classList.add('active');
+};
+
+window.closeEchoAlert = function() {
+    const overlay = document.getElementById('echo-alert-overlay');
+    if (overlay) overlay.classList.remove('active');
 };
 
 window.switchAuthTab = function(tabName) {
@@ -958,14 +986,16 @@ window.submitLogin = function() {
             // Tokens are managed by Cognito SDK in localStorage by default
             const accessToken = result.getAccessToken().getJwtToken();
 
-            alert('Login successful! Session will remain valid for 15 days.');
+            showEchoAlert('Login successful!');
             
-            if (email === window.AUTH_CONFIG.adminEmail) {
-                localStorage.setItem('isAdmin', 'true');
-                window.location.href = 'admin.html';
-            } else {
-                window.location.href = 'user.html';
-            }
+            setTimeout(() => {
+                if (email === window.AUTH_CONFIG.adminEmail) {
+                    localStorage.setItem('isAdmin', 'true');
+                    window.location.href = 'admin.html';
+                } else {
+                    window.location.href = 'user.html';
+                }
+            }, 1500);
         },
         onFailure: function(err) {
             console.error('Cognito Login Error:', err);
