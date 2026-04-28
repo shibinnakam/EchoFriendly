@@ -1,0 +1,383 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: echofriendly-backend SAM Template
+
+Globals:
+  Function:
+    Timeout: 10
+    MemorySize: 128
+    Runtime: nodejs20.x
+    Architectures:
+      - x86_64
+
+Resources:
+  UsersTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: userId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: userId
+          KeyType: HASH
+
+  CategoriesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: categoryId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: categoryId
+          KeyType: HASH
+
+  ProductsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: productId
+          AttributeType: S
+        - AttributeName: categoryId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: productId
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: CategoryIndex
+          KeySchema:
+            - AttributeName: categoryId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+
+  OrdersTable:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      PrimaryKey:
+        Name: orderId
+        Type: String
+
+  EchoMediaBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: false
+        BlockPublicPolicy: false
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: false
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders: ['*']
+            AllowedMethods: [GET, PUT, POST, DELETE, HEAD]
+            AllowedOrigins: ['*']
+            MaxAge: 3600
+
+  EchoMediaBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref EchoMediaBucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: '*'
+            Action: s3:GetObject
+            Resource: !Sub 'arn:aws:s3:::${EchoMediaBucket}/*'
+
+  EchoHttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      StageName: '$default'
+      Auth:
+        DefaultAuthorizer: CognitoAuthorizer
+        Authorizers:
+          CognitoAuthorizer:
+            IdentitySource: '$request.header.Authorization'
+            JwtConfiguration:
+              audience:
+                - !Ref EchoUserPoolClient
+              issuer: !Sub 'https://cognito-idp.${AWS::Region}.amazonaws.com/${EchoUserPool}'
+      CorsConfiguration:
+        AllowOrigins:
+          - 'https://echofriendly.netlify.app'
+          - 'http://localhost:5173'
+        AllowMethods: [GET, POST, PUT, DELETE, OPTIONS]
+        AllowHeaders: [Content-Type, Authorization]
+        MaxAge: 3600
+
+  EchoUserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      AutoVerifiedAttributes: [email]
+      UsernameAttributes: [email]
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireLowercase: true
+          RequireNumbers: true
+          RequireUppercase: true
+
+  EchoUserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: EchoFriendlyWebClient
+      UserPoolId: !Ref EchoUserPool
+      GenerateSecret: false
+      ExplicitAuthFlows: [ALLOW_USER_SRP_AUTH, ALLOW_REFRESH_TOKEN_AUTH, ALLOW_USER_PASSWORD_AUTH]
+      AccessTokenValidity: 15
+      IdTokenValidity: 15
+      RefreshTokenValidity: 15
+      TokenValidityUnits:
+        AccessToken: minutes
+        IdToken: minutes
+        RefreshToken: days
+
+  # ─────────────────────────────────────────
+  # PROFILE FUNCTIONS
+  # ─────────────────────────────────────────
+  ProfileFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: handlers/profile/profile.handler
+      MemorySize: 128
+      Environment:
+        Variables:
+          USERS_TABLE: !Ref UsersTable
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UsersTable
+      Events:
+        GetProfile:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref EchoHttpApi
+            Path: /profile
+            Method: GET
+        UpdateProfile:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref EchoHttpApi
+            Path: /profile
+            Method: POST
+
+  # ─────────────────────────────────────────
+  # INVENTORY FUNCTIONS
+  # ─────────────────────────────────────────
+  ProductsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: handlers/inventory/products.handler
+      MemorySize: 128
+      Environment:
+        Variables:
+          PRODUCTS_TABLE: !Ref ProductsTable
+          MEDIA_BUCKET: !Ref EchoMediaBucket
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ProductsTable
+        - S3WritePolicy:
+            BucketName: !Ref EchoMediaBucket
+        - S3ReadPolicy:
+            BucketName: !Ref EchoMediaBucket
+      Events:
+        ProductsApi:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref EchoHttpApi
+            Path: /inventory/products
+            Method: ANY
+        ProductsOptions:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref EchoHttpApi
+            Path: /inventory/products
+            Method: OPTIONS
+            Auth:
+              Authorizer: NONE
+        PresignedUrl:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref EchoHttpApi
+            Path: /inventory/presigned-url
+            Method: POST
+
+  CategoriesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: handlers/inventory/categories.handler
+      MemorySize: 128
+      Environment:
+        Variables:
+          CATEGORIES_TABLE: !Ref CategoriesTable
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref CategoriesTable
+      Events:
+        CategoriesApi:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref EchoHttpApi
+            Path: /inventory/categories
+            Method: ANY
+        CategoriesOptions:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref EchoHttpApi
+            Path: /inventory/categories
+            Method: OPTIONS
+            Auth:
+              Authorizer: NONE
+
+  # ─────────────────────────────────────────
+  # ORDER FUNCTIONS
+  # ─────────────────────────────────────────
+  CreateOrderFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: handlers/orders/createOrder.handler
+      MemorySize: 256
+      Timeout: 15
+      Environment:
+        Variables:
+          PRODUCTS_TABLE: !Ref ProductsTable
+          RAZORPAY_KEY_ID: rzp_live_Si0FNwKgjvHkT1
+          RAZORPAY_KEY_SECRET: 71v4wJXOx0U2KmwTcw2Yw8p7
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref ProductsTable
+      Events:
+        CreateOrder:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref EchoHttpApi
+            Path: /orders/create
+            Method: POST
+
+  VerifyPaymentFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: handlers/orders/verifyPayment.handler
+      MemorySize: 256
+      Timeout: 15
+      Environment:
+        Variables:
+          ORDERS_TABLE: !Ref OrdersTable
+          PRODUCTS_TABLE: !Ref ProductsTable
+          RAZORPAY_KEY_SECRET: 71v4wJXOx0U2KmwTcw2Yw8p7
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref OrdersTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ProductsTable
+      Events:
+        VerifyPayment:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref EchoHttpApi
+            Path: /orders/verify
+            Method: POST
+
+  WebhookFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: handlers/orders/webhook.handler
+      MemorySize: 128
+      Events:
+        Webhook:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref EchoHttpApi
+            Path: /orders/webhook
+            Method: POST
+            Auth:
+              Authorizer: NONE
+
+  ListOrdersFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: handlers/orders/listOrders.handler
+      MemorySize: 128
+      Environment:
+        Variables:
+          ORDERS_TABLE: !Ref OrdersTable
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref OrdersTable
+      Events:
+        ListAdminOrders:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref EchoHttpApi
+            Path: /orders/list
+            Method: GET
+        ListUserOrders:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref EchoHttpApi
+            Path: /orders/user-list
+            Method: GET
+
+  UpdateOrderStatusFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: handlers/orders/updateStatus.handler
+      MemorySize: 128
+      Environment:
+        Variables:
+          ORDERS_TABLE: !Ref OrdersTable
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref OrdersTable
+      Events:
+        UpdateOrderStatus:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref EchoHttpApi
+            Path: /orders/status
+            Method: PUT
+
+  CancelOrderFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: handlers/orders/cancelOrder.handler
+      MemorySize: 256
+      Timeout: 20
+      Environment:
+        Variables:
+          ORDERS_TABLE: !Ref OrdersTable
+          PRODUCTS_TABLE: !Ref ProductsTable
+          RAZORPAY_KEY_ID: rzp_live_Si0FNwKgjvHkT1
+          RAZORPAY_KEY_SECRET: 71v4wJXOx0U2KmwTcw2Yw8p7
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref OrdersTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ProductsTable
+      Events:
+        CancelOrder:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref EchoHttpApi
+            Path: /orders/cancel
+            Method: PUT
+
+Outputs:
+  ApiEndpoint:
+    Value: !Sub 'https://${EchoHttpApi}.execute-api.${AWS::Region}.amazonaws.com/'
+  UserPoolId:
+    Value: !Ref EchoUserPool
+  UserPoolClientId:
+    Value: !Ref EchoUserPoolClient
+
