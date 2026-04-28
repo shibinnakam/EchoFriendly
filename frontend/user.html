@@ -217,17 +217,6 @@
         .info-box p { font-size: 0.9rem; color: #1a2e26; font-weight: 600; }
         @media (max-width: 768px) { .info-modal-content { grid-template-columns: 1fr; } }
 
-        @media print {
-            body * { display: none !important; }
-            #invoice-modal, #invoice-modal * { display: block !important; }
-            #invoice-printable, #invoice-printable * { display: block !important; }
-            .sidebar, .hero-banner, .auth-preloader, .close-cart, .btn-cart, .btn-qty, .nav-links, .echo-toast { display: none !important; }
-            #invoice-modal { position: static !important; background: white !important; padding: 0 !important; margin: 0 !important; width: 100% !important; border-radius: 0 !important; }
-            #invoice-content { position: static !important; width: 100% !important; padding: 0 !important; box-shadow: none !important; border-radius: 0 !important; }
-            #invoice-printable { position: static !important; width: 100% !important; padding: 0 !important; border: none !important; }
-            @page { margin: 0; }
-            body { margin: 1.5cm; }
-        }
     </style>
 </head>
 <body>
